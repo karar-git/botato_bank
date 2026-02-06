@@ -135,9 +135,6 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<BankDbContext>();
-    // ONE-TIME: Drop old schema and recreate with new columns (Role, IsApproved, etc.)
-    // TODO: Remove EnsureDeleted() after first successful deploy
-    db.Database.EnsureDeleted();
     db.Database.EnsureCreated();
 
     // Seed default admin user if none exists
