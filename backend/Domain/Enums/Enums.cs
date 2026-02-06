@@ -3,15 +3,23 @@ namespace CoreBank.Domain.Enums;
 public enum UserRole
 {
     Customer = 1,
-    Agent = 2,
-    Operator = 3,
+    Merchant = 2,
+    Employee = 3,
     Admin = 4
+}
+
+public enum KycStatus
+{
+    Pending = 1,
+    Verified = 2,
+    Rejected = 3
 }
 
 public enum AccountType
 {
     Checking = 1,
-    Savings = 2
+    Savings = 2,
+    Business = 3
 }
 
 public enum AccountStatus

@@ -8,7 +8,7 @@ namespace CoreBank.Controllers;
 
 [ApiController]
 [Route("api/accounts/{accountId:guid}")]
-[Authorize(Roles = "Customer,Agent,Admin")]
+[Authorize(Roles = "Customer,Merchant")]
 public class WalletController : ControllerBase
 {
     private readonly IBankingEngine _bankingEngine;
@@ -20,7 +20,7 @@ public class WalletController : ControllerBase
 
     private Guid GetUserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-    private bool IsApproved() => User.FindFirstValue("IsApproved") == "True";
+    private bool IsKycVerified() => User.FindFirstValue("KycStatus") == "Verified";
 
     /// <summary>
     /// Deposit funds into an account.
@@ -30,7 +30,7 @@ public class WalletController : ControllerBase
     [HttpPost("deposit")]
     public async Task<IActionResult> Deposit(Guid accountId, [FromBody] DepositRequest request)
     {
-        if (!IsApproved()) return StatusCode(403, new { message = "Your account is pending approval." });
+        if (!IsKycVerified()) return StatusCode(403, new { message = "Your KYC is not verified yet." });
         var result = await _bankingEngine.DepositAsync(GetUserId(), accountId, request);
         return Ok(result);
     }
@@ -43,7 +43,7 @@ public class WalletController : ControllerBase
     [HttpPost("withdraw")]
     public async Task<IActionResult> Withdraw(Guid accountId, [FromBody] WithdrawRequest request)
     {
-        if (!IsApproved()) return StatusCode(403, new { message = "Your account is pending approval." });
+        if (!IsKycVerified()) return StatusCode(403, new { message = "Your KYC is not verified yet." });
         var result = await _bankingEngine.WithdrawAsync(GetUserId(), accountId, request);
         return Ok(result);
     }

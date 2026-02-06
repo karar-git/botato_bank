@@ -15,7 +15,7 @@ public class UserResponse
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
-    public bool IsApproved { get; set; }
+    public string KycStatus { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }
 
@@ -88,7 +88,7 @@ public class BalanceReconciliationResponse
 }
 
 /// <summary>
-/// Extended user info for admin review, includes ID card images.
+/// Extended user info for admin/employee review, includes ID card images and KYC status.
 /// </summary>
 public class AdminUserResponse
 {
@@ -96,9 +96,59 @@ public class AdminUserResponse
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
-    public bool IsApproved { get; set; }
+    public string KycStatus { get; set; } = string.Empty;
+    public string? NationalIdNumber { get; set; }
     public string? RejectionReason { get; set; }
     public string? IdCardFrontImage { get; set; }
     public string? IdCardBackImage { get; set; }
     public DateTime CreatedAt { get; set; }
+}
+
+/// <summary>
+/// System-wide statistics for admin dashboard (read-only oversight).
+/// </summary>
+public class SystemStatsResponse
+{
+    public int TotalUsers { get; set; }
+    public int TotalCustomers { get; set; }
+    public int TotalMerchants { get; set; }
+    public int TotalEmployees { get; set; }
+    public int KycPending { get; set; }
+    public int KycVerified { get; set; }
+    public int KycRejected { get; set; }
+    public int TotalAccounts { get; set; }
+    public int ActiveAccounts { get; set; }
+    public int TotalTransactions { get; set; }
+    public int TotalTransfers { get; set; }
+    public decimal TotalDepositVolume { get; set; }
+    public decimal TotalWithdrawalVolume { get; set; }
+    public decimal TotalTransferVolume { get; set; }
+    public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// Result of a single CSV row processed by the Employee CSV upload.
+/// </summary>
+public class CsvRowResult
+{
+    public int RowNumber { get; set; }
+    public string NationalId { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public string Operation { get; set; } = string.Empty;
+    public bool Success { get; set; }
+    public string? Error { get; set; }
+    public string? AccountNumber { get; set; }
+    public decimal? BalanceAfter { get; set; }
+}
+
+/// <summary>
+/// Response for the Employee CSV upload endpoint.
+/// </summary>
+public class CsvUploadResponse
+{
+    public int TotalRows { get; set; }
+    public int SuccessCount { get; set; }
+    public int FailureCount { get; set; }
+    public List<CsvRowResult> Results { get; set; } = new();
+    public DateTime ProcessedAt { get; set; } = DateTime.UtcNow;
 }

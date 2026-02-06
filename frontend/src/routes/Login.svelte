@@ -13,6 +13,7 @@
   let fullName = '';
   let idCardFront = null;
   let idCardFrontName = '';
+  let nationalIdNumber = '';
   let idCardBack = null;
   let idCardBackName = '';
 
@@ -43,7 +44,7 @@
           loading = false;
           return;
         }
-        result = await api.register({ fullName, email, password, idCardFront, idCardBack });
+        result = await api.register({ fullName, email, password, idCardFront, idCardBack, nationalIdNumber });
       } else {
         result = await api.login({ email, password });
       }
@@ -74,6 +75,11 @@
         <div class="field">
           <label for="fullName">Full Name</label>
           <input id="fullName" type="text" bind:value={fullName} required minlength="2" maxlength="100" placeholder="John Doe" />
+        </div>
+        <div class="field">
+          <label for="nationalIdNumber">National ID Number (رقم البطاقة الوطنية)</label>
+          <input id="nationalIdNumber" type="text" bind:value={nationalIdNumber} required maxlength="50" placeholder="e.g. AB123456" />
+          <p class="field-hint">Your national ID number is used for identity verification and payroll processing.</p>
         </div>
       {/if}
 
@@ -114,7 +120,7 @@
               {/if}
             </div>
           </div>
-          <p class="field-hint">An admin will review your ID for verification before activating your account.</p>
+          <p class="field-hint">An admin will review your ID for verification before activating your account. Your KYC status must be verified to perform banking operations.</p>
         </div>
       {/if}
 

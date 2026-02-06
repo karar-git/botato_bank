@@ -359,6 +359,7 @@
             <select bind:value={newAccountType}>
               <option value="Checking">Checking</option>
               <option value="Savings">Savings</option>
+              <option value="Business">Business</option>
             </select>
           </div>
           <div class="modal-actions">

@@ -19,7 +19,7 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Register a new user. Requires front and back photos of البطاقة الوطنية (national ID card).
-    /// User will be pending until an admin reviews and approves the ID images.
+    /// User will have KYC status Pending until an employee reviews and verifies the ID images.
     /// </summary>
     [HttpPost("register")]
     [AllowAnonymous]
@@ -28,6 +28,7 @@ public class AuthController : ControllerBase
         [FromForm] string fullName,
         [FromForm] string email,
         [FromForm] string password,
+        [FromForm] string? nationalIdNumber,
         IFormFile idCardFront,
         IFormFile idCardBack)
     {
@@ -70,7 +71,8 @@ public class AuthController : ControllerBase
         {
             FullName = fullName,
             Email = email,
-            Password = password
+            Password = password,
+            NationalIdNumber = nationalIdNumber
         };
 
         var result = await _authService.RegisterAsync(request, frontBase64, backBase64);
@@ -99,8 +101,8 @@ public class AuthController : ControllerBase
         var email = User.FindFirstValue(ClaimTypes.Email);
         var name = User.FindFirstValue(ClaimTypes.Name);
         var role = User.FindFirstValue(ClaimTypes.Role);
-        var isApproved = User.FindFirstValue("IsApproved");
+        var kycStatus = User.FindFirstValue("KycStatus");
 
-        return Ok(new { Id = userId, Email = email, Name = name, Role = role, IsApproved = isApproved });
+        return Ok(new { Id = userId, Email = email, Name = name, Role = role, KycStatus = kycStatus });
     }
 }

@@ -39,6 +39,7 @@ export const api = {
     formData.append('password', data.password);
     formData.append('idCardFront', data.idCardFront);
     formData.append('idCardBack', data.idCardBack);
+    if (data.nationalIdNumber) formData.append('nationalIdNumber', data.nationalIdNumber);
     return request('/auth/register', { method: 'POST', body: formData, isFormData: true });
   },
   login: (data) => request('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
@@ -78,10 +79,24 @@ export const api = {
   getPendingUsers: () => request('/admin/pending-users'),
   getAllUsers: () => request('/admin/users'),
   getUser: (userId) => request(`/admin/users/${userId}`),
-  approveUser: (userId, data) =>
-    request(`/admin/users/${userId}/approve`, { method: 'POST', body: JSON.stringify(data) }),
-  setUserRole: (userId, data) =>
-    request(`/admin/users/${userId}/role`, { method: 'POST', body: JSON.stringify(data) }),
+  updateKyc: (userId, data) =>
+    request(`/admin/users/${userId}/kyc`, { method: 'POST', body: JSON.stringify(data) }),
+  getStats: () => request('/admin/stats'),
+  getAdminTransactions: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/admin/transactions?${query}`);
+  },
+  getAdminTransfers: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/admin/transfers?${query}`);
+  },
+
+  // Employee
+  uploadCsv: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return request('/employee/csv-upload', { method: 'POST', body: formData, isFormData: true });
+  },
 };
 
 export function setToken(token) {

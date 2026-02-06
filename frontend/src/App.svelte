@@ -3,6 +3,7 @@
   import Login from './routes/Login.svelte';
   import Dashboard from './routes/Dashboard.svelte';
   import AdminPanel from './routes/AdminPanel.svelte';
+  import EmployeePanel from './routes/EmployeePanel.svelte';
 
   let authenticated = isAuthenticated();
   let user = null;
@@ -51,20 +52,29 @@
       <Login on:login={handleLogin} />
     {:else if user && user.role === 'Admin'}
       <AdminPanel {user} />
-    {:else if user && !user.isApproved}
-      <!-- Pending Approval Screen -->
+    {:else if user && user.role === 'Employee'}
+      <EmployeePanel {user} />
+    {:else if user && user.kycStatus === 'Rejected'}
+      <!-- Rejected Screen -->
       <div class="pending-card">
-        <div class="pending-icon">&#9203;</div>
-        <h2>Account Pending Review</h2>
-        <p>Your account registration has been received. An administrator will review your ID documents and approve your account shortly.</p>
-        <p class="pending-hint">You will be able to access banking features once your identity has been verified.</p>
+        <div class="pending-icon">&#10060;</div>
+        <h2>Identity Verification Failed</h2>
+        <p>Your KYC submission was reviewed and rejected by an administrator.</p>
         {#if user.rejectionReason}
           <div class="rejection-notice">
-            <strong>Your previous submission was not approved:</strong>
+            <strong>Reason:</strong>
             <p>{user.rejectionReason}</p>
-            <p>Please contact support or re-register with clearer ID images.</p>
           </div>
         {/if}
+        <p class="pending-hint">This decision is final. Please contact support if you believe this is an error, or register a new account with valid ID documents.</p>
+      </div>
+    {:else if user && user.kycStatus !== 'Verified'}
+      <!-- Pending KYC Screen -->
+      <div class="pending-card">
+        <div class="pending-icon">&#9203;</div>
+        <h2>Account Pending KYC Review</h2>
+        <p>Your account registration has been received. An administrator will review your ID documents and verify your identity shortly.</p>
+        <p class="pending-hint">You will be able to access banking features once your KYC status is verified.</p>
         <button class="btn-refresh" on:click={() => api.me().then(u => user = u)}>Check Status</button>
       </div>
     {:else if user}

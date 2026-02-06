@@ -4,12 +4,21 @@
 
   export let user;
 
-  let tab = 'pending'; // 'pending' | 'all'
+  let tab = 'stats'; // 'stats' | 'pending' | 'all' | 'transactions' | 'transfers'
+  let stats = null;
   let pendingUsers = [];
   let allUsers = [];
+  let adminTransactions = null;
+  let adminTransfers = null;
   let loading = true;
   let error = '';
   let success = '';
+
+  // Pagination
+  let txPage = 1;
+  let txPageSize = 20;
+  let trPage = 1;
+  let trPageSize = 20;
 
   // User detail modal
   let selectedUser = null;
@@ -17,24 +26,25 @@
   let rejectionReason = '';
   let actionLoading = false;
 
-  // Role change
-  let showRoleModal = false;
-  let roleTarget = null;
-  let newRole = 'Customer';
-
   onMount(loadData);
 
   async function loadData() {
     loading = true;
     error = '';
     try {
-      if (tab === 'pending') {
+      if (tab === 'stats') {
+        stats = await api.getStats();
+      } else if (tab === 'pending') {
         pendingUsers = await api.getPendingUsers();
-      } else {
+      } else if (tab === 'all') {
         allUsers = await api.getAllUsers();
+      } else if (tab === 'transactions') {
+        adminTransactions = await api.getAdminTransactions({ page: txPage, pageSize: txPageSize });
+      } else if (tab === 'transfers') {
+        adminTransfers = await api.getAdminTransfers({ page: trPage, pageSize: trPageSize });
       }
     } catch (err) {
-      error = err.message || 'Failed to load users';
+      error = err.message || 'Failed to load data';
     } finally {
       loading = false;
     }
@@ -43,6 +53,8 @@
   async function switchTab(t) {
     tab = t;
     selectedUser = null;
+    txPage = 1;
+    trPage = 1;
     await loadData();
   }
 
@@ -59,16 +71,16 @@
     }
   }
 
-  async function handleApprove() {
+  async function handleVerify() {
     actionLoading = true;
     error = '';
     try {
-      await api.approveUser(selectedUser.id, { approved: true });
-      success = `${selectedUser.fullName} has been approved. A checking account was created.`;
+      await api.updateKyc(selectedUser.id, { status: 'Verified' });
+      success = `${selectedUser.fullName} has been verified. A checking account was auto-created.`;
       selectedUser = null;
       await loadData();
     } catch (err) {
-      error = err.message || 'Approval failed';
+      error = err.message || 'Verification failed';
     } finally {
       actionLoading = false;
     }
@@ -78,8 +90,8 @@
     actionLoading = true;
     error = '';
     try {
-      await api.approveUser(selectedUser.id, {
-        approved: false,
+      await api.updateKyc(selectedUser.id, {
+        status: 'Rejected',
         rejectionReason: rejectionReason || 'ID verification failed.'
       });
       success = `${selectedUser.fullName} has been rejected.`;
@@ -92,30 +104,29 @@
     }
   }
 
-  function openRoleModal(u) {
-    roleTarget = u;
-    newRole = u.role;
-    showRoleModal = true;
+  async function goTxPage(newPage) {
+    txPage = newPage;
+    await loadData();
   }
 
-  async function handleRoleChange() {
-    actionLoading = true;
-    error = '';
-    try {
-      await api.setUserRole(roleTarget.id, { role: newRole });
-      success = `${roleTarget.fullName}'s role changed to ${newRole}.`;
-      showRoleModal = false;
-      roleTarget = null;
-      await loadData();
-    } catch (err) {
-      error = err.message || 'Role change failed';
-    } finally {
-      actionLoading = false;
-    }
+  async function goTrPage(newPage) {
+    trPage = newPage;
+    await loadData();
   }
 
   function formatDate(d) {
     return new Date(d).toLocaleString();
+  }
+
+  function formatAmount(amount) {
+    const val = parseFloat(amount);
+    return `$${val.toFixed(2)}`;
+  }
+
+  function kycBadgeClass(status) {
+    if (status === 'Verified') return 'status-verified';
+    if (status === 'Rejected') return 'status-rejected';
+    return 'status-pending';
   }
 </script>
 
@@ -131,8 +142,11 @@
 
   <!-- Tabs -->
   <div class="tabs">
+    <button class="tab" class:active={tab === 'stats'} on:click={() => switchTab('stats')}>
+      Dashboard
+    </button>
     <button class="tab" class:active={tab === 'pending'} on:click={() => switchTab('pending')}>
-      Pending Approvals
+      Pending KYC
       {#if pendingUsers.length > 0}
         <span class="badge-count">{pendingUsers.length}</span>
       {/if}
@@ -140,14 +154,90 @@
     <button class="tab" class:active={tab === 'all'} on:click={() => switchTab('all')}>
       All Users
     </button>
+    <button class="tab" class:active={tab === 'transactions'} on:click={() => switchTab('transactions')}>
+      Transactions
+    </button>
+    <button class="tab" class:active={tab === 'transfers'} on:click={() => switchTab('transfers')}>
+      Transfers
+    </button>
   </div>
 
   {#if loading}
     <div class="loading">Loading...</div>
+
+  {:else if tab === 'stats'}
+    <!-- Stats Dashboard -->
+    {#if stats}
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value">{stats.totalUsers}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Customers</div>
+          <div class="stat-value">{stats.totalCustomers}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Merchants</div>
+          <div class="stat-value">{stats.totalMerchants}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Employees</div>
+          <div class="stat-value">{stats.totalEmployees}</div>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card stat-pending">
+          <div class="stat-label">KYC Pending</div>
+          <div class="stat-value">{stats.kycPending}</div>
+        </div>
+        <div class="stat-card stat-verified">
+          <div class="stat-label">KYC Verified</div>
+          <div class="stat-value">{stats.kycVerified}</div>
+        </div>
+        <div class="stat-card stat-rejected">
+          <div class="stat-label">KYC Rejected</div>
+          <div class="stat-value">{stats.kycRejected}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Accounts</div>
+          <div class="stat-value">{stats.totalAccounts}</div>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Active Accounts</div>
+          <div class="stat-value">{stats.activeAccounts}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Transactions</div>
+          <div class="stat-value">{stats.totalTransactions}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Transfers</div>
+          <div class="stat-value">{stats.totalTransfers}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Deposit Volume</div>
+          <div class="stat-value">{formatAmount(stats.totalDepositVolume)}</div>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Withdrawal Volume</div>
+          <div class="stat-value">{formatAmount(stats.totalWithdrawalVolume)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Transfer Volume</div>
+          <div class="stat-value">{formatAmount(stats.totalTransferVolume)}</div>
+        </div>
+      </div>
+    {/if}
+
   {:else if tab === 'pending'}
-    <!-- Pending Users -->
+    <!-- Pending KYC Users -->
     {#if pendingUsers.length === 0}
-      <div class="empty">No users pending approval.</div>
+      <div class="empty">No users pending KYC review.</div>
     {:else}
       <div class="user-list">
         {#each pendingUsers as u}
@@ -162,7 +252,8 @@
         {/each}
       </div>
     {/if}
-  {:else}
+
+  {:else if tab === 'all'}
     <!-- All Users -->
     {#if allUsers.length === 0}
       <div class="empty">No users found.</div>
@@ -173,7 +264,8 @@
             <th>Name</th>
             <th>Email</th>
             <th>Role</th>
-            <th>Status</th>
+            <th>KYC Status</th>
+            <th>National ID</th>
             <th>Registered</th>
             <th>Actions</th>
           </tr>
@@ -185,27 +277,95 @@
               <td>{u.email}</td>
               <td><span class="role-badge role-{u.role.toLowerCase()}">{u.role}</span></td>
               <td>
-                {#if u.isApproved}
-                  <span class="status-approved">Approved</span>
-                {:else if u.rejectionReason}
-                  <span class="status-rejected">Rejected</span>
-                {:else}
-                  <span class="status-pending">Pending</span>
-                {/if}
+                <span class={kycBadgeClass(u.kycStatus)}>{u.kycStatus}</span>
               </td>
+              <td class="mono">{u.nationalIdNumber || '-'}</td>
               <td>{formatDate(u.createdAt)}</td>
-              <td class="actions-cell">
+              <td>
                 <button class="btn-sm" on:click={() => viewUser(u.id)}>View</button>
-                <button class="btn-sm" on:click={() => openRoleModal(u)}>Role</button>
               </td>
             </tr>
           {/each}
         </tbody>
       </table>
     {/if}
+
+  {:else if tab === 'transactions'}
+    <!-- Transaction Ledger (read-only) -->
+    {#if adminTransactions && adminTransactions.items && adminTransactions.items.length > 0}
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Account</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Balance After</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each adminTransactions.items as tx}
+            <tr>
+              <td>{formatDate(tx.createdAt)}</td>
+              <td class="mono">{tx.accountNumber || tx.accountId}</td>
+              <td><span class="badge badge-{tx.type.toLowerCase()}">{tx.type}</span></td>
+              <td class={parseFloat(tx.amount) >= 0 ? 'amount-pos' : 'amount-neg'}>
+                {formatAmount(tx.amount)}
+              </td>
+              <td>{formatAmount(tx.balanceAfter)}</td>
+              <td class="desc">{tx.description}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+      <div class="pagination">
+        <button class="btn-sm" disabled={txPage <= 1} on:click={() => goTxPage(txPage - 1)}>Prev</button>
+        <span>Page {adminTransactions.page} of {adminTransactions.totalPages} ({adminTransactions.totalCount} total)</span>
+        <button class="btn-sm" disabled={txPage >= adminTransactions.totalPages} on:click={() => goTxPage(txPage + 1)}>Next</button>
+      </div>
+    {:else}
+      <div class="empty">No transactions found.</div>
+    {/if}
+
+  {:else if tab === 'transfers'}
+    <!-- Transfers (read-only) -->
+    {#if adminTransfers && adminTransfers.items && adminTransfers.items.length > 0}
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each adminTransfers.items as tr}
+            <tr>
+              <td>{formatDate(tr.createdAt)}</td>
+              <td class="mono">{tr.sourceAccountNumber}</td>
+              <td class="mono">{tr.destinationAccountNumber}</td>
+              <td>{formatAmount(tr.amount)}</td>
+              <td><span class="badge badge-{tr.status.toLowerCase()}">{tr.status}</span></td>
+              <td class="desc">{tr.description}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+      <div class="pagination">
+        <button class="btn-sm" disabled={trPage <= 1} on:click={() => goTrPage(trPage - 1)}>Prev</button>
+        <span>Page {adminTransfers.page} of {adminTransfers.totalPages} ({adminTransfers.totalCount} total)</span>
+        <button class="btn-sm" disabled={trPage >= adminTransfers.totalPages} on:click={() => goTrPage(trPage + 1)}>Next</button>
+      </div>
+    {:else}
+      <div class="empty">No transfers found.</div>
+    {/if}
   {/if}
 
-  <!-- User Detail / ID Review Modal -->
+  <!-- User Detail / KYC Review Modal -->
   {#if selectedUser}
     <div class="modal-backdrop" on:click={() => selectedUser = null}>
       <div class="modal modal-wide" on:click|stopPropagation>
@@ -223,16 +383,17 @@
               <span class="role-badge role-{selectedUser.role.toLowerCase()}">{selectedUser.role}</span>
             </div>
             <div class="detail-item">
-              <label>Status</label>
-              <span>
-                {#if selectedUser.isApproved}
-                  Approved
-                {:else if selectedUser.rejectionReason}
-                  Rejected: {selectedUser.rejectionReason}
-                {:else}
-                  Pending Approval
+              <label>KYC Status</label>
+              <span class={kycBadgeClass(selectedUser.kycStatus)}>
+                {selectedUser.kycStatus}
+                {#if selectedUser.kycStatus === 'Rejected' && selectedUser.rejectionReason}
+                  - {selectedUser.rejectionReason}
                 {/if}
               </span>
+            </div>
+            <div class="detail-item">
+              <label>National ID</label>
+              <span>{selectedUser.nationalIdNumber || 'Not provided'}</span>
             </div>
             <div class="detail-item">
               <label>Registered</label>
@@ -260,11 +421,11 @@
             </div>
           </div>
 
-          <!-- Approve / Reject actions (only for non-approved users) -->
-          {#if !selectedUser.isApproved}
+          <!-- KYC Verify / Reject actions (only for Pending users) -->
+          {#if selectedUser.kycStatus === 'Pending'}
             <div class="approval-actions">
               <div class="field">
-                <label for="rejectionReason">Rejection Reason (optional)</label>
+                <label for="rejectionReason">Rejection Reason (required if rejecting)</label>
                 <input id="rejectionReason" type="text" bind:value={rejectionReason} placeholder="e.g. ID image is blurry" />
               </div>
               <div class="modal-actions">
@@ -272,8 +433,8 @@
                 <button class="btn btn-reject" on:click={handleReject} disabled={actionLoading}>
                   {actionLoading ? 'Processing...' : 'Reject'}
                 </button>
-                <button class="btn btn-approve" on:click={handleApprove} disabled={actionLoading}>
-                  {actionLoading ? 'Processing...' : 'Approve'}
+                <button class="btn btn-approve" on:click={handleVerify} disabled={actionLoading}>
+                  {actionLoading ? 'Processing...' : 'Verify'}
                 </button>
               </div>
             </div>
@@ -283,30 +444,6 @@
             </div>
           {/if}
         {/if}
-      </div>
-    </div>
-  {/if}
-
-  <!-- Role Change Modal -->
-  {#if showRoleModal && roleTarget}
-    <div class="modal-backdrop" on:click={() => showRoleModal = false}>
-      <div class="modal" on:click|stopPropagation>
-        <h3>Change Role: {roleTarget.fullName}</h3>
-        <div class="field">
-          <label for="roleSelect">New Role</label>
-          <select id="roleSelect" bind:value={newRole}>
-            <option value="Customer">Customer</option>
-            <option value="Agent">Agent</option>
-            <option value="Operator">Operator</option>
-            <option value="Admin">Admin</option>
-          </select>
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-cancel" on:click={() => showRoleModal = false}>Cancel</button>
-          <button class="btn btn-approve" on:click={handleRoleChange} disabled={actionLoading}>
-            {actionLoading ? 'Saving...' : 'Save Role'}
-          </button>
-        </div>
       </div>
     </div>
   {/if}
@@ -340,12 +477,13 @@
     gap: 0;
     margin-bottom: 1.5rem;
     border-bottom: 2px solid #e2e8f0;
+    flex-wrap: wrap;
   }
   .tab {
     background: none;
     border: none;
-    padding: 0.7rem 1.5rem;
-    font-size: 0.9rem;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: #718096;
     cursor: pointer;
@@ -370,6 +508,36 @@
   .loading { text-align: center; padding: 3rem; color: #718096; }
   .empty { text-align: center; padding: 3rem; color: #a0aec0; font-size: 1rem; }
 
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .stat-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1.2rem;
+    text-align: center;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .stat-pending { border-left: 3px solid #d69e2e; }
+  .stat-verified { border-left: 3px solid #48bb78; }
+  .stat-rejected { border-left: 3px solid #e53e3e; }
+
   /* User List (pending) */
   .user-list { display: flex; flex-direction: column; gap: 0.5rem; }
   .user-card {
@@ -388,7 +556,7 @@
   .user-email { font-size: 0.85rem; color: #718096; }
   .user-date { font-size: 0.75rem; color: #a0aec0; }
 
-  /* Users Table (all) */
+  /* Users Table */
   .users-table {
     width: 100%;
     border-collapse: collapse;
@@ -412,7 +580,7 @@
     border-bottom: 1px solid #f0f2f5;
   }
   .users-table tr:hover { background: #f7fafc; }
-  .actions-cell { display: flex; gap: 0.3rem; }
+  .mono { font-family: monospace; font-size: 0.8rem; }
 
   /* Badges */
   .role-badge {
@@ -424,13 +592,40 @@
     text-transform: uppercase;
   }
   .role-admin { background: #e9d8fd; color: #6b46c1; }
-  .role-agent { background: #bee3f8; color: #2b6cb0; }
+  .role-merchant { background: #bee3f8; color: #2b6cb0; }
   .role-customer { background: #c6f6d5; color: #22543d; }
-  .role-operator { background: #feebc8; color: #c05621; }
+  .role-employee { background: #feebc8; color: #c05621; }
 
-  .status-approved { color: #22543d; font-weight: 600; }
+  .status-verified { color: #22543d; font-weight: 600; }
   .status-rejected { color: #c53030; font-weight: 600; }
   .status-pending { color: #d69e2e; font-weight: 600; }
+
+  .badge {
+    display: inline-block; padding: 0.15rem 0.5rem; border-radius: 12px;
+    font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+  }
+  .badge-deposit { background: #c6f6d5; color: #22543d; }
+  .badge-withdrawal { background: #feebc8; color: #c05621; }
+  .badge-transferdebit { background: #fed7d7; color: #c53030; }
+  .badge-transfercredit { background: #bee3f8; color: #2b6cb0; }
+  .badge-completed { background: #c6f6d5; color: #22543d; }
+  .badge-pending { background: #fefcbf; color: #975a16; }
+  .badge-failed { background: #fed7d7; color: #c53030; }
+
+  .amount-pos { color: #22543d; font-weight: 600; }
+  .amount-neg { color: #c53030; font-weight: 600; }
+  .desc { color: #718096; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    color: #718096;
+    font-size: 0.85rem;
+  }
 
   /* Buttons */
   .btn {
@@ -459,6 +654,7 @@
     font-weight: 600;
   }
   .btn-sm:hover { background: #e2e8f0; }
+  .btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* Modal */
   .modal-backdrop {
@@ -544,19 +740,19 @@
     color: #4a5568;
     margin-bottom: 0.3rem;
   }
-  .field input, .field select {
+  .field input {
     width: 100%;
     padding: 0.6rem 0.8rem;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     font-size: 0.9rem;
   }
-  .field input:focus, .field select:focus { outline: none; border-color: #4299e1; }
+  .field input:focus { outline: none; border-color: #4299e1; }
 
   @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .detail-grid { grid-template-columns: 1fr; }
     .id-images { grid-template-columns: 1fr; }
     .users-table { font-size: 0.8rem; }
-    .actions-cell { flex-direction: column; }
   }
 </style>

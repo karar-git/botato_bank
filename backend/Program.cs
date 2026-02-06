@@ -138,9 +138,12 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<BankDbContext>();
+
+    // Schema changed — reset DB to apply new schema (remove after first deploy)
+    db.Database.EnsureDeleted();
     db.Database.EnsureCreated();
 
-    // Seed default admin user if none exists
+    // Seed default admin user
     if (!db.Users.Any(u => u.Role == UserRole.Admin))
     {
         var admin = new User
@@ -150,13 +153,31 @@ using (var scope = app.Services.CreateScope())
             Email = "admin@botatobank.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
             Role = UserRole.Admin,
-            IsApproved = true,
+            KycStatus = KycStatus.Verified,
             CreatedAt = DateTime.UtcNow
         };
         db.Users.Add(admin);
-        db.SaveChanges();
-        Console.WriteLine($"Seeded admin user: admin@botatobank.com / Admin@123");
+        Console.WriteLine("Seeded admin user: admin@botatobank.com / Admin@123");
     }
+
+    // Seed default employee user
+    if (!db.Users.Any(u => u.Role == UserRole.Employee))
+    {
+        var employee = new User
+        {
+            Id = Guid.NewGuid(),
+            FullName = "System Employee",
+            Email = "employee@botatobank.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Employee@123"),
+            Role = UserRole.Employee,
+            KycStatus = KycStatus.Verified,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.Users.Add(employee);
+        Console.WriteLine("Seeded employee user: employee@botatobank.com / Employee@123");
+    }
+
+    db.SaveChanges();
 }
 
 // Railway sets PORT env var — bind to 0.0.0.0 so the container is reachable

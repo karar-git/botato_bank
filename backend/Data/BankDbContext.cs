@@ -33,11 +33,13 @@ public class BankDbContext : DbContext
             entity.ToTable("Users");
             entity.HasKey(u => u.Id);
             entity.HasIndex(u => u.Email).IsUnique();
+            entity.HasIndex(u => u.NationalIdNumber).IsUnique().HasFilter(null);
             entity.Property(u => u.Email).IsRequired().HasMaxLength(255);
             entity.Property(u => u.FullName).IsRequired().HasMaxLength(100);
             entity.Property(u => u.PasswordHash).IsRequired();
             entity.Property(u => u.Role).IsRequired();
-            entity.Property(u => u.IsApproved).HasDefaultValue(false);
+            entity.Property(u => u.NationalIdNumber).HasMaxLength(50);
+            entity.Property(u => u.KycStatus).IsRequired().HasDefaultValue(Domain.Enums.KycStatus.Pending);
             entity.Property(u => u.RejectionReason).HasMaxLength(500);
         });
 

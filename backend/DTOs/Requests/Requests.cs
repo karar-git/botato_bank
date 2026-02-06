@@ -12,6 +12,13 @@ public class RegisterRequest
 
     [Required, MinLength(8), MaxLength(128)]
     public string Password { get; set; } = string.Empty;
+
+    /// <summary>
+    /// National ID number (رقم البطاقة الوطنية).
+    /// Required for user identification in CSV bulk operations.
+    /// </summary>
+    [MaxLength(50)]
+    public string? NationalIdNumber { get; set; }
 }
 
 public class LoginRequest
@@ -26,7 +33,7 @@ public class LoginRequest
 public class CreateAccountRequest
 {
     [Required]
-    public string Type { get; set; } = "Checking"; // "Checking" or "Savings"
+    public string Type { get; set; } = "Checking"; // "Checking", "Savings", or "Business"
 }
 
 public class DepositRequest
@@ -88,22 +95,13 @@ public class TransactionHistoryRequest
 }
 
 /// <summary>
-/// Admin approves or rejects a user's registration.
+/// Employee verifies or rejects a user's KYC after reviewing ID images.
 /// </summary>
-public class ApproveUserRequest
+public class UpdateKycRequest
 {
     [Required]
-    public bool Approved { get; set; }
+    public string Status { get; set; } = string.Empty; // "Verified" or "Rejected"
 
     [MaxLength(500)]
     public string? RejectionReason { get; set; }
-}
-
-/// <summary>
-/// Admin can set a user's role.
-/// </summary>
-public class SetUserRoleRequest
-{
-    [Required]
-    public string Role { get; set; } = string.Empty; // "Customer", "Agent", "Operator", "Admin"
 }
