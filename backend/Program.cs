@@ -131,6 +131,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Health check endpoint for Railway
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+
 // ===== AUTO-MIGRATE DATABASE =====
 using (var scope = app.Services.CreateScope())
 {
