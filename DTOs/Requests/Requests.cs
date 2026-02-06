@@ -105,3 +105,12 @@ public class UpdateKycRequest
     [MaxLength(500)]
     public string? RejectionReason { get; set; }
 }
+
+/// <summary>
+/// Switch the current user's role (demo/hackathon feature).
+/// </summary>
+public class SwitchRoleRequest
+{
+    [Required]
+    public string Role { get; set; } = string.Empty; // "Customer", "Merchant", "Employee", "Admin"
+}

@@ -1,6 +1,12 @@
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using CoreBank.Data;
+using CoreBank.Domain.Enums;
 using CoreBank.DTOs.Requests;
 using CoreBank.Services;
 
@@ -11,10 +17,14 @@ namespace CoreBank.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly BankDbContext _db;
+    private readonly IConfiguration _config;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, BankDbContext db, IConfiguration config)
     {
         _authService = authService;
+        _db = db;
+        _config = config;
     }
 
     /// <summary>
@@ -91,18 +101,82 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Get current authenticated user info.
+    /// Get current authenticated user info (reads from DB for fresh data).
     /// </summary>
     [HttpGet("me")]
     [Authorize]
-    public IActionResult Me()
+    public async Task<IActionResult> Me()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var email = User.FindFirstValue(ClaimTypes.Email);
-        var name = User.FindFirstValue(ClaimTypes.Name);
-        var role = User.FindFirstValue(ClaimTypes.Role);
-        var kycStatus = User.FindFirstValue("KycStatus");
+        var user = await _db.Users.FindAsync(Guid.Parse(userId!));
+        if (user == null) return NotFound();
 
-        return Ok(new { Id = userId, Email = email, Name = name, Role = role, KycStatus = kycStatus });
+        return Ok(new
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Name = user.FullName,
+            Role = user.Role.ToString(),
+            KycStatus = user.KycStatus.ToString(),
+            RejectionReason = user.RejectionReason
+        });
+    }
+
+    /// <summary>
+    /// Switch the current user's role (demo/hackathon feature).
+    /// Returns a fresh JWT with the new role so the frontend can update immediately.
+    /// </summary>
+    [HttpPost("switch-role")]
+    [Authorize]
+    public async Task<IActionResult> SwitchRole([FromBody] SwitchRoleRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _db.Users.FindAsync(Guid.Parse(userId!));
+        if (user == null) return NotFound();
+
+        if (!Enum.TryParse<UserRole>(request.Role, true, out var newRole))
+            return BadRequest(new { message = "Invalid role. Must be: Customer, Merchant, Employee, or Admin." });
+
+        user.Role = newRole;
+        await _db.SaveChangesAsync();
+
+        // Generate a fresh JWT with the new role
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expiryMinutes = int.TryParse(_config["Jwt:ExpiryMinutes"], out var mins) ? mins : 60;
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Name, user.FullName),
+            new Claim(ClaimTypes.Role, user.Role.ToString()),
+            new Claim("KycStatus", user.KycStatus.ToString()),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: _config["Jwt:Issuer"],
+            audience: _config["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
+            signingCredentials: credentials
+        );
+
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+        return Ok(new
+        {
+            token = tokenString,
+            expiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes),
+            user = new
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                Role = user.Role.ToString(),
+                KycStatus = user.KycStatus.ToString()
+            }
+        });
     }
 }
