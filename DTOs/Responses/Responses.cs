@@ -152,3 +152,38 @@ public class CsvUploadResponse
     public List<CsvRowResult> Results { get; set; } = new();
     public DateTime ProcessedAt { get; set; } = DateTime.UtcNow;
 }
+
+/// <summary>
+/// Debit card response — returned on list/get operations.
+/// Card number is masked (only last 4 digits shown). CVV never returned after creation.
+/// </summary>
+public class DebitCardResponse
+{
+    public Guid Id { get; set; }
+    public Guid AccountId { get; set; }
+    public string AccountNumber { get; set; } = string.Empty;
+    public string MaskedCardNumber { get; set; } = string.Empty; // **** **** **** 1234
+    public string CardholderName { get; set; } = string.Empty;
+    public string ExpiryDate { get; set; } = string.Empty; // MM/YY
+    public string Status { get; set; } = string.Empty;
+    public decimal DailyLimit { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+/// <summary>
+/// Returned only once when a new debit card is created.
+/// Contains the full card number and CVV in plain text.
+/// </summary>
+public class DebitCardCreatedResponse
+{
+    public Guid Id { get; set; }
+    public Guid AccountId { get; set; }
+    public string AccountNumber { get; set; } = string.Empty;
+    public string CardNumber { get; set; } = string.Empty;      // Full 16-digit number
+    public string CardholderName { get; set; } = string.Empty;
+    public string ExpiryDate { get; set; } = string.Empty;      // MM/YY
+    public string Cvv { get; set; } = string.Empty;             // 3-digit CVV (only shown once)
+    public string Status { get; set; } = string.Empty;
+    public decimal DailyLimit { get; set; }
+    public DateTime CreatedAt { get; set; }
+}

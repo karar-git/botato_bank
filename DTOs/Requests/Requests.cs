@@ -114,3 +114,24 @@ public class SwitchRoleRequest
     [Required]
     public string Role { get; set; } = string.Empty; // "Customer", "Merchant", "Employee", "Admin"
 }
+
+/// <summary>
+/// Request to issue a new debit card for an account.
+/// </summary>
+public class CreateDebitCardRequest
+{
+    [Required]
+    public Guid AccountId { get; set; }
+
+    [Range(100, 100000, ErrorMessage = "Daily limit must be between 100 and 100,000")]
+    public decimal DailyLimit { get; set; } = 5000m;
+}
+
+/// <summary>
+/// Request to freeze/unfreeze/cancel a debit card.
+/// </summary>
+public class UpdateCardStatusRequest
+{
+    [Required]
+    public string Status { get; set; } = string.Empty; // "Active", "Frozen", "Cancelled"
+}

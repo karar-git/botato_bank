@@ -51,3 +51,10 @@ public enum TransferStatus
     Completed = 2,
     Failed = 3
 }
+
+public enum CardStatus
+{
+    Active = 1,
+    Frozen = 2,
+    Cancelled = 3
+}
