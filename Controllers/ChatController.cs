@@ -10,7 +10,7 @@ namespace CoreBank.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Customer,Agent,Admin")]
+[Authorize(Roles = "Customer,Merchant,Employee,Admin")]
 public class ChatController : ControllerBase
 {
     private readonly BankDbContext _db;
@@ -26,8 +26,10 @@ public class ChatController : ControllerBase
     {
         _db = db;
         _httpClient = httpClientFactory.CreateClient();
-        _chatApiUrl = config["Ocr:ApiUrl"]?.Replace("/validate-id", "/chat")
-            ?? "http://localhost:8000/chat";
+        // Read from config: Chat:ApiUrl > Ocr:ApiUrl (transformed) > fallback to production AI service
+        _chatApiUrl = config["Chat:ApiUrl"]
+            ?? config["Ocr:ApiUrl"]?.Replace("/validate-id", "/chat")
+            ?? "https://botatobank-production-47d4.up.railway.app/chat";
         _logger = logger;
     }
 
