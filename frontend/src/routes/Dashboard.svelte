@@ -25,6 +25,7 @@
   let depositDesc = '';
   let withdrawAmount = '';
   let withdrawDesc = '';
+  let withdrawAtm = '';
   let transferDest = '';
   let transferAmount = '';
   let transferDesc = '';
@@ -100,11 +101,12 @@
       await api.withdraw(selectedAccount.id, {
         amount: parseFloat(withdrawAmount),
         description: withdrawDesc || 'Withdrawal',
+        atmNumber: withdrawAtm,
         idempotencyKey: crypto.randomUUID()
       });
-      success = `Withdrew $${parseFloat(withdrawAmount).toFixed(2)} successfully`;
+      success = `Withdrew $${parseFloat(withdrawAmount).toFixed(2)} successfully (ATM: ${withdrawAtm})`;
       showWithdraw = false;
-      withdrawAmount = ''; withdrawDesc = '';
+      withdrawAmount = ''; withdrawDesc = ''; withdrawAtm = '';
       await loadAccounts();
       selectedAccount = accounts.find(a => a.id === selectedAccount.id);
       await loadTransactions();
@@ -285,7 +287,9 @@
             {/if}
 
             <div class="actions">
-              <button class="btn btn-deposit" on:click={() => { showDeposit = true; clearMessages(); }}>Deposit</button>
+              {#if user.role === 'Merchant'}
+                <button class="btn btn-deposit" on:click={() => { showDeposit = true; clearMessages(); }}>Deposit</button>
+              {/if}
               <button class="btn btn-withdraw" on:click={() => { showWithdraw = true; clearMessages(); }}>Withdraw</button>
               {#if selectedAccount.type !== 'Savings'}
                 <button class="btn btn-transfer" on:click={() => { showTransfer = true; clearMessages(); }}>Transfer</button>
@@ -419,6 +423,10 @@
       <div class="modal" on:click|stopPropagation>
         <h3>Withdraw Funds</h3>
         <form on:submit|preventDefault={handleWithdraw}>
+          <div class="field">
+            <label>ATM / Branch Number</label>
+            <input type="text" bind:value={withdrawAtm} required placeholder="e.g. ATM-001 or BRANCH-MAIN" maxlength="50" />
+          </div>
           <div class="field">
             <label>Amount ($)</label>
             <input type="number" step="0.01" min="0.01" bind:value={withdrawAmount} required />

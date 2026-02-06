@@ -156,9 +156,7 @@ public class BankingEngine : IBankingEngine
                 Type = TransactionType.Withdrawal,
                 Status = TransactionStatus.Completed,
                 BalanceAfter = newBalance,
-                Description = string.IsNullOrWhiteSpace(request.Description)
-                    ? "Cash withdrawal"
-                    : request.Description,
+                Description = $"[ATM: {request.AtmNumber}] {(string.IsNullOrWhiteSpace(request.Description) ? "Cash withdrawal" : request.Description)}",
                 CreatedAt = DateTime.UtcNow
             };
 

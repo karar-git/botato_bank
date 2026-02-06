@@ -59,6 +59,13 @@ public class WithdrawRequest
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
 
+    /// <summary>
+    /// ATM or branch number where the withdrawal is being made.
+    /// Required for all withdrawals.
+    /// </summary>
+    [Required, MaxLength(50)]
+    public string AtmNumber { get; set; } = string.Empty;
+
     [MaxLength(100)]
     public string? IdempotencyKey { get; set; }
 }
