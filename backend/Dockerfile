@@ -13,8 +13,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app .
 
-# Railway sets PORT env var
+# Clear .NET 8 default port (8080) so Program.cs can bind to Railway's $PORT
 ENV ASPNETCORE_ENVIRONMENT=Production
-EXPOSE 8080
+ENV ASPNETCORE_URLS=
+ENV ASPNETCORE_HTTP_PORTS=
 
 ENTRYPOINT ["dotnet", "CoreBank.dll"]
