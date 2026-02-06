@@ -135,8 +135,9 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 }
 
-// Railway sets PORT env var
+// Railway sets PORT env var — bind to 0.0.0.0 so the container is reachable
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+app.Urls.Clear();
 app.Urls.Add($"http://0.0.0.0:{port}");
 
 app.Run();
