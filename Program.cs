@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using CoreBank.Data;
+using CoreBank.Domain.Entities;
+using CoreBank.Domain.Enums;
 using CoreBank.Middleware;
 using CoreBank.Services;
 
@@ -24,7 +26,6 @@ else
 }
 
 // ===== AUTHENTICATION =====
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "DEFAULT-DEV-KEY-CHANGE-IN-PRODUCTION-MIN-32-BYTES!!";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -34,10 +35,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "CoreBank",
-            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "CoreBankClients",
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtKey)),
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
             ClockSkew = TimeSpan.Zero // No tolerance for expired tokens
         };
     });
@@ -49,7 +50,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IBankingEngine, BankingEngine>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
-builder.Services.AddHttpClient<IOcrService, OcrService>();
+builder.Services.AddHttpClient(); // For ChatController to call AI service
 
 // ===== CONTROLLERS =====
 builder.Services.AddControllers()
@@ -130,21 +131,29 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// ===== HEALTH CHECK ENDPOINT =====
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
-
 // ===== AUTO-MIGRATE DATABASE =====
-try
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<BankDbContext>();
     db.Database.EnsureCreated();
-    Console.WriteLine("Database initialized successfully.");
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"WARNING: Database initialization failed: {ex.Message}");
-    Console.WriteLine("The application will start but database operations may fail.");
+
+    // Seed default admin user if none exists
+    if (!db.Users.Any(u => u.Role == UserRole.Admin))
+    {
+        var admin = new User
+        {
+            Id = Guid.NewGuid(),
+            FullName = "System Admin",
+            Email = "admin@botatobank.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+            Role = UserRole.Admin,
+            IsApproved = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.Users.Add(admin);
+        db.SaveChanges();
+        Console.WriteLine($"Seeded admin user: admin@botatobank.com / Admin@123");
+    }
 }
 
 // Railway sets PORT env var — bind to 0.0.0.0 so the container is reachable
@@ -152,5 +161,4 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 app.Urls.Clear();
 app.Urls.Add($"http://0.0.0.0:{port}");
 
-Console.WriteLine($"Starting on port {port}...");
 app.Run();

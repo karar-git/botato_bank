@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using CoreBank.Domain.Enums;
 
 namespace CoreBank.Domain.Entities;
 
@@ -22,15 +23,32 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
 
     /// <summary>
-    /// National ID number extracted from البطاقة الوطنية via OCR during registration.
+    /// User role: Customer, Agent, Operator, Admin.
     /// </summary>
-    [Required, MaxLength(20)]
-    public string NationalIdNumber { get; set; } = string.Empty;
+    public UserRole Role { get; set; } = UserRole.Customer;
 
     /// <summary>
-    /// Whether the national ID has been verified via OCR.
+    /// Base64-encoded front image of the national ID card (البطاقة الوطنية).
+    /// Stored in DB for admin review during approval.
     /// </summary>
-    public bool IsIdVerified { get; set; } = false;
+    public string? IdCardFrontImage { get; set; }
+
+    /// <summary>
+    /// Base64-encoded back image of the national ID card (البطاقة الوطنية).
+    /// </summary>
+    public string? IdCardBackImage { get; set; }
+
+    /// <summary>
+    /// Whether the user has been approved by an admin after ID review.
+    /// Users cannot perform banking operations until approved.
+    /// </summary>
+    public bool IsApproved { get; set; } = false;
+
+    /// <summary>
+    /// Optional rejection reason if admin rejected the ID.
+    /// </summary>
+    [MaxLength(500)]
+    public string? RejectionReason { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

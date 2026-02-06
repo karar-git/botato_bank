@@ -8,7 +8,7 @@ namespace CoreBank.Controllers;
 
 [ApiController]
 [Route("api/accounts/{accountId:guid}")]
-[Authorize]
+[Authorize(Roles = "Customer,Agent,Admin")]
 public class WalletController : ControllerBase
 {
     private readonly IBankingEngine _bankingEngine;
@@ -20,6 +20,8 @@ public class WalletController : ControllerBase
 
     private Guid GetUserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    private bool IsApproved() => User.FindFirstValue("IsApproved") == "True";
+
     /// <summary>
     /// Deposit funds into an account.
     /// Only the account owner can deposit.
@@ -28,6 +30,7 @@ public class WalletController : ControllerBase
     [HttpPost("deposit")]
     public async Task<IActionResult> Deposit(Guid accountId, [FromBody] DepositRequest request)
     {
+        if (!IsApproved()) return StatusCode(403, new { message = "Your account is pending approval." });
         var result = await _bankingEngine.DepositAsync(GetUserId(), accountId, request);
         return Ok(result);
     }
@@ -40,6 +43,7 @@ public class WalletController : ControllerBase
     [HttpPost("withdraw")]
     public async Task<IActionResult> Withdraw(Guid accountId, [FromBody] WithdrawRequest request)
     {
+        if (!IsApproved()) return StatusCode(403, new { message = "Your account is pending approval." });
         var result = await _bankingEngine.WithdrawAsync(GetUserId(), accountId, request);
         return Ok(result);
     }
