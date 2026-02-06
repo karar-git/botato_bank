@@ -49,6 +49,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IBankingEngine, BankingEngine>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddHttpClient<IOcrService, OcrService>();
 
 // ===== CONTROLLERS =====
 builder.Services.AddControllers()
