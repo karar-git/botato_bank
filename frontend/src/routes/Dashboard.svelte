@@ -1,6 +1,7 @@
 <script>
   import { api } from '../lib/api.js';
   import { onMount } from 'svelte';
+  import ChatWidget from '../lib/ChatWidget.svelte';
 
   export let user;
 
@@ -370,6 +371,8 @@
       </div>
     </div>
   {/if}
+
+  <ChatWidget />
 </div>
 
 <style>

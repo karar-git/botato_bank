@@ -58,6 +58,13 @@ export const api = {
   // Transfers
   transfer: (data) => request('/transfers', { method: 'POST', body: JSON.stringify(data) }),
 
+  // Chat
+  chat: (message, conversationHistory = []) =>
+    request('/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message, conversationHistory }),
+    }),
+
   // Transactions
   getTransactions: (accountId, params = {}) => {
     const query = new URLSearchParams(params).toString();
