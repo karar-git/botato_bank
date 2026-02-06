@@ -1,0 +1,73 @@
+// API_BASE reads from Vite env at build time.
+// In dev: proxied via vite.config.js to localhost:5000
+// In prod: set VITE_API_URL env var in Vercel to your Railway backend URL
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
+function getToken() {
+  return localStorage.getItem('corebank_token');
+}
+
+async function request(path, options = {}) {
+  const token = getToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers,
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: res.statusText }));
+    throw { status: res.status, ...error };
+  }
+
+  // Handle empty responses (204, etc.)
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+export const api = {
+  // Auth
+  register: (data) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+  login: (data) => request('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+  me: () => request('/auth/me'),
+
+  // Accounts
+  getAccounts: () => request('/accounts'),
+  createAccount: (data) => request('/accounts', { method: 'POST', body: JSON.stringify(data) }),
+  getAccount: (id) => request(`/accounts/${id}`),
+  reconcile: (id) => request(`/accounts/${id}/reconcile`),
+
+  // Wallet
+  deposit: (accountId, data) =>
+    request(`/accounts/${accountId}/deposit`, { method: 'POST', body: JSON.stringify(data) }),
+  withdraw: (accountId, data) =>
+    request(`/accounts/${accountId}/withdraw`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Transfers
+  transfer: (data) => request('/transfers', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Transactions
+  getTransactions: (accountId, params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/accounts/${accountId}/transactions?${query}`);
+  },
+  exportCsv: (accountId) => `${API_BASE}/accounts/${accountId}/transactions/export/csv`,
+  exportXlsx: (accountId) => `${API_BASE}/accounts/${accountId}/transactions/export/xlsx`,
+};
+
+export function setToken(token) {
+  localStorage.setItem('corebank_token', token);
+}
+
+export function clearToken() {
+  localStorage.removeItem('corebank_token');
+}
+
+export function isAuthenticated() {
+  return !!getToken();
+}
