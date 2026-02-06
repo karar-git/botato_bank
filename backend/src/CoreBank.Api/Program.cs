@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using CoreBank.Data;
-using CoreBank.Middleware;
-using CoreBank.Services;
+using CoreBank.Infrastructure.Data;
+using CoreBank.Api.Middleware;
+using CoreBank.Application.Interfaces;
+using CoreBank.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

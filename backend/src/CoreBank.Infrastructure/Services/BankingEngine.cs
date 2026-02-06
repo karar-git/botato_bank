@@ -1,12 +1,14 @@
 using Microsoft.EntityFrameworkCore;
-using CoreBank.Data;
+using Microsoft.Extensions.Logging;
+using CoreBank.Infrastructure.Data;
 using CoreBank.Domain.Entities;
 using CoreBank.Domain.Enums;
 using CoreBank.Domain.Exceptions;
-using CoreBank.DTOs.Requests;
-using CoreBank.DTOs.Responses;
+using CoreBank.Application.DTOs.Requests;
+using CoreBank.Application.DTOs.Responses;
+using CoreBank.Application.Interfaces;
 
-namespace CoreBank.Services;
+namespace CoreBank.Infrastructure.Services;
 
 /// <summary>
 /// CORE BANKING ENGINE
@@ -42,13 +44,6 @@ namespace CoreBank.Services;
 /// IDEMPOTENCY: Transfers require an idempotency key. If the same key is sent twice,
 /// the second request returns the original result without re-execution.
 /// </summary>
-public interface IBankingEngine
-{
-    Task<LedgerEntryResponse> DepositAsync(Guid userId, Guid accountId, DepositRequest request);
-    Task<LedgerEntryResponse> WithdrawAsync(Guid userId, Guid accountId, WithdrawRequest request);
-    Task<TransferResponse> TransferAsync(Guid userId, TransferRequest request);
-}
-
 public class BankingEngine : IBankingEngine
 {
     private readonly BankDbContext _db;

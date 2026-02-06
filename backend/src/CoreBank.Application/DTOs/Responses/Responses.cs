@@ -1,6 +1,4 @@
-using CoreBank.Domain.Enums;
-
-namespace CoreBank.DTOs.Responses;
+namespace CoreBank.Application.DTOs.Responses;
 
 public class AuthResponse
 {

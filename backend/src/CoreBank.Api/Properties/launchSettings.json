@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "CoreBank": {
+    "CoreBank.Api": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

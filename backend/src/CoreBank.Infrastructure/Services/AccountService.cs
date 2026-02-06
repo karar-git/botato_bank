@@ -1,22 +1,14 @@
 using Microsoft.EntityFrameworkCore;
-using CoreBank.Data;
+using Microsoft.Extensions.Logging;
+using CoreBank.Infrastructure.Data;
 using CoreBank.Domain.Entities;
 using CoreBank.Domain.Enums;
 using CoreBank.Domain.Exceptions;
-using CoreBank.DTOs.Requests;
-using CoreBank.DTOs.Responses;
+using CoreBank.Application.DTOs.Requests;
+using CoreBank.Application.DTOs.Responses;
+using CoreBank.Application.Interfaces;
 
-namespace CoreBank.Services;
-
-public interface IAccountService
-{
-    Task<AccountResponse> CreateAccountAsync(Guid userId, CreateAccountRequest request);
-    Task<List<AccountResponse>> GetUserAccountsAsync(Guid userId);
-    Task<AccountResponse> GetAccountAsync(Guid userId, Guid accountId);
-    Task<decimal> GetLedgerBalanceAsync(Guid accountId);
-    Task<BalanceReconciliationResponse> ReconcileBalanceAsync(Guid userId, Guid accountId);
-    Task ValidateAccountOwnership(Guid userId, Guid accountId);
-}
+namespace CoreBank.Infrastructure.Services;
 
 public class AccountService : IAccountService
 {

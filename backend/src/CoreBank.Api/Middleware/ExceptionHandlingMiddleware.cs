@@ -1,9 +1,9 @@
 using System.Net;
 using System.Text.Json;
 using CoreBank.Domain.Exceptions;
-using CoreBank.DTOs.Responses;
+using CoreBank.Application.DTOs.Responses;
 
-namespace CoreBank.Middleware;
+namespace CoreBank.Api.Middleware;
 
 /// <summary>
 /// Global exception handler that maps domain exceptions to structured HTTP error responses.

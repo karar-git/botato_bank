@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using CoreBank.DTOs.Requests;
-using CoreBank.Services;
+using CoreBank.Application.DTOs.Requests;
+using CoreBank.Application.Interfaces;
 
-namespace CoreBank.Controllers;
+namespace CoreBank.Api.Controllers;
 
 [ApiController]
 [Route("api/accounts/{accountId:guid}")]

@@ -1,19 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using CoreBank.Data;
+using Microsoft.Extensions.Logging;
+using CoreBank.Infrastructure.Data;
 using CoreBank.Domain.Enums;
 using CoreBank.Domain.Exceptions;
-using CoreBank.DTOs.Requests;
-using CoreBank.DTOs.Responses;
+using CoreBank.Application.DTOs.Requests;
+using CoreBank.Application.DTOs.Responses;
+using CoreBank.Application.Interfaces;
 
-namespace CoreBank.Services;
-
-public interface ITransactionService
-{
-    Task<PaginatedResponse<LedgerEntryResponse>> GetTransactionHistoryAsync(
-        Guid userId, Guid accountId, TransactionHistoryRequest request);
-    Task<byte[]> ExportToCsvAsync(Guid userId, Guid accountId, DateTime? from, DateTime? to);
-    Task<byte[]> ExportToXlsxAsync(Guid userId, Guid accountId, DateTime? from, DateTime? to);
-}
+namespace CoreBank.Infrastructure.Services;
 
 public class TransactionService : ITransactionService
 {

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using CoreBank.Domain.Entities;
 
-namespace CoreBank.Data;
+namespace CoreBank.Infrastructure.Data;
 
 /// <summary>
 /// EF Core DbContext implementing the core banking schema.
