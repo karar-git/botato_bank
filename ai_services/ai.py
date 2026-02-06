@@ -3,19 +3,30 @@ import json
 import os
 from openai import OpenAI
 
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+# fal.ai OpenRouter endpoint — OpenAI-compatible
+# Uses FAL_KEY for authentication, routes through OpenRouter to Gemini Flash 2.5
+FAL_KEY = os.environ.get("FAL_KEY", "")
+
+client = OpenAI(
+    api_key=FAL_KEY,
+    base_url="https://fal.run/openrouter/router/openai/v1",
+    default_headers={"Authorization": f"Key {FAL_KEY}"},
+)
+
+VISION_MODEL = "google/gemini-2.5-flash-preview"
+CHAT_MODEL = "google/gemini-2.5-flash-preview"
 
 
 def validate_national_id(image_bytes: bytes) -> dict:
     """
-    Takes an image of an ID card, sends it to OpenAI Vision API,
+    Takes an image of an ID card, sends it to Gemini Flash 2.5 via fal.ai,
     and checks if it's a valid البطاقة الوطنية (Moroccan national ID card).
     Returns {"valid": bool, "idNumber": str|None, "error": str|None}
     """
     base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model=VISION_MODEL,
         messages=[
             {
                 "role": "system",
@@ -78,6 +89,7 @@ class BankChatbot:
     A banking assistant chatbot that has context about the user's accounts
     and transaction history. The .NET backend sends the user's data along
     with each chat request so the chatbot can give informed answers.
+    Uses Gemini Flash 2.5 via fal.ai OpenRouter.
     """
 
     SYSTEM_PROMPT = (
@@ -91,7 +103,11 @@ class BankChatbot:
     )
 
     def __init__(self):
-        self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        self.client = OpenAI(
+            api_key=FAL_KEY,
+            base_url="https://fal.run/openrouter/router/openai/v1",
+            default_headers={"Authorization": f"Key {FAL_KEY}"},
+        )
 
     def chat(
         self, user_message: str, conversation_history: list, user_context: dict
@@ -127,7 +143,7 @@ class BankChatbot:
         messages.append({"role": "user", "content": user_message})
 
         response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=CHAT_MODEL,
             messages=messages,
             max_tokens=500,
             temperature=0.7,
