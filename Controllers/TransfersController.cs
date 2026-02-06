@@ -8,7 +8,7 @@ namespace CoreBank.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Customer,Agent,Admin")]
+[Authorize(Roles = "Customer,Merchant")]
 public class TransfersController : ControllerBase
 {
     private readonly IBankingEngine _bankingEngine;
@@ -20,7 +20,7 @@ public class TransfersController : ControllerBase
 
     private Guid GetUserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-    private bool IsApproved() => User.FindFirstValue("IsApproved") == "True";
+    private bool IsKycVerified() => User.FindFirstValue("KycStatus") == "Verified";
 
     /// <summary>
     /// Execute an atomic fund transfer between two accounts.
@@ -34,7 +34,7 @@ public class TransfersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Transfer([FromBody] TransferRequest request)
     {
-        if (!IsApproved()) return StatusCode(403, new { message = "Your account is pending approval." });
+        if (!IsKycVerified()) return StatusCode(403, new { message = "Your KYC is not verified yet." });
         var result = await _bankingEngine.TransferAsync(GetUserId(), request);
         return Ok(result);
     }

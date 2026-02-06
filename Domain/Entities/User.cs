@@ -23,13 +23,20 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
 
     /// <summary>
-    /// User role: Customer, Agent, Operator, Admin.
+    /// User role: Customer, Merchant, Employee, Admin.
     /// </summary>
     public UserRole Role { get; set; } = UserRole.Customer;
 
     /// <summary>
+    /// National ID number (رقم البطاقة الوطنية).
+    /// Used for CSV bulk operations to identify users.
+    /// </summary>
+    [MaxLength(50)]
+    public string? NationalIdNumber { get; set; }
+
+    /// <summary>
     /// Base64-encoded front image of the national ID card (البطاقة الوطنية).
-    /// Stored in DB for admin review during approval.
+    /// Stored in DB for KYC review.
     /// </summary>
     public string? IdCardFrontImage { get; set; }
 
@@ -39,13 +46,13 @@ public class User
     public string? IdCardBackImage { get; set; }
 
     /// <summary>
-    /// Whether the user has been approved by an admin after ID review.
-    /// Users cannot perform banking operations until approved.
+    /// KYC verification status. Gates sensitive operations (transfers, withdrawals).
+    /// Pending = awaiting review, Verified = approved, Rejected = denied.
     /// </summary>
-    public bool IsApproved { get; set; } = false;
+    public KycStatus KycStatus { get; set; } = KycStatus.Pending;
 
     /// <summary>
-    /// Optional rejection reason if admin rejected the ID.
+    /// Optional rejection reason if KYC was rejected.
     /// </summary>
     [MaxLength(500)]
     public string? RejectionReason { get; set; }

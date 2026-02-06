@@ -38,7 +38,15 @@ public class AuthService : IAuthService
         if (exists)
             throw new UserAlreadyExistsException(request.Email);
 
-        // Create user (not approved yet -- admin must review ID images)
+        // Check for duplicate NationalIdNumber if provided
+        if (!string.IsNullOrWhiteSpace(request.NationalIdNumber))
+        {
+            var nationalIdExists = await _db.Users.AnyAsync(u => u.NationalIdNumber == request.NationalIdNumber.Trim());
+            if (nationalIdExists)
+                throw new UserAlreadyExistsException($"National ID {request.NationalIdNumber} is already registered.");
+        }
+
+        // Create user (KYC pending -- employee must review ID images)
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -46,16 +54,17 @@ public class AuthService : IAuthService
             Email = request.Email.ToLower().Trim(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             Role = UserRole.Customer,
+            NationalIdNumber = request.NationalIdNumber?.Trim(),
             IdCardFrontImage = idCardFrontBase64,
             IdCardBackImage = idCardBackBase64,
-            IsApproved = false,
+            KycStatus = KycStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
 
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
 
-        _logger.LogInformation("User {UserId} registered, pending admin approval", user.Id);
+        _logger.LogInformation("User {UserId} registered, KYC pending", user.Id);
 
         return new AuthResponse
         {
@@ -73,8 +82,8 @@ public class AuthService : IAuthService
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             throw new InvalidCredentialsException();
 
-        _logger.LogInformation("User {UserId} logged in (role={Role}, approved={Approved})",
-            user.Id, user.Role, user.IsApproved);
+        _logger.LogInformation("User {UserId} logged in (role={Role}, kyc={KycStatus})",
+            user.Id, user.Role, user.KycStatus);
 
         return new AuthResponse
         {
@@ -96,7 +105,7 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, user.FullName),
             new Claim(ClaimTypes.Role, user.Role.ToString()),
-            new Claim("IsApproved", user.IsApproved.ToString()),
+            new Claim("KycStatus", user.KycStatus.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -114,20 +123,13 @@ public class AuthService : IAuthService
     private int GetExpiryMinutes() =>
         int.TryParse(_config["Jwt:ExpiryMinutes"], out var mins) ? mins : 60;
 
-    private static string GenerateAccountNumber(string prefix)
-    {
-        var datePart = DateTime.UtcNow.ToString("yyyyMMdd");
-        var randomPart = Guid.NewGuid().ToString("N")[..6].ToUpper();
-        return $"{prefix}-{datePart}-{randomPart}";
-    }
-
     internal static UserResponse MapUserResponse(User user) => new()
     {
         Id = user.Id,
         FullName = user.FullName,
         Email = user.Email,
         Role = user.Role.ToString(),
-        IsApproved = user.IsApproved,
+        KycStatus = user.KycStatus.ToString(),
         CreatedAt = user.CreatedAt
     };
 }
