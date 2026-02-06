@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PotatoBank - Database Schema</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; font-family: 'Segoe UI', sans-serif; padding: 40px; color: #e0e0e0; }
+  h1 { text-align: center; color: #f5c542; font-size: 28px; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 40px; }
+  .schema { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; max-width: 1400px; margin: 0 auto; }
+  .table-card {
+    background: #16213e;
+    border: 2px solid #0f3460;
+    border-radius: 12px;
+    min-width: 300px;
+    max-width: 340px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .table-header {
+    background: #0f3460;
+    padding: 14px 18px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #f5c542;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .table-header .icon { font-size: 20px; }
+  .columns { padding: 6px 0; }
+  .col {
+    display: flex;
+    align-items: center;
+    padding: 7px 18px;
+    font-size: 13px;
+    border-bottom: 1px solid #0d1b3e;
+  }
+  .col:last-child { border-bottom: none; }
+  .col-name { flex: 1; font-weight: 600; color: #e0e0e0; }
+  .col-type { color: #4fc3f7; font-size: 12px; font-family: monospace; margin-right: 8px; }
+  .col-constraint {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+  .pk { background: #f5c542; color: #1a1a2e; }
+  .fk { background: #e94560; color: #fff; }
+  .uq { background: #6c63ff; color: #fff; }
+  .cc { background: #00b894; color: #fff; }
+  .ix { background: #636e72; color: #fff; }
+  .nn { background: #fd7e14; color: #fff; font-size: 9px; }
+
+  .relations {
+    max-width: 1400px;
+    margin: 50px auto 0;
+    background: #16213e;
+    border: 2px solid #0f3460;
+    border-radius: 12px;
+    padding: 24px 30px;
+  }
+  .relations h2 { color: #f5c542; font-size: 18px; margin-bottom: 16px; }
+  .rel-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px solid #0d1b3e;
+    gap: 10px;
+  }
+  .rel-row:last-child { border-bottom: none; }
+  .rel-from, .rel-to { 
+    background: #0f3460; 
+    padding: 4px 10px; 
+    border-radius: 6px; 
+    font-weight: 600;
+    color: #4fc3f7;
+  }
+  .rel-arrow { color: #f5c542; font-weight: 700; font-size: 16px; }
+  .rel-type { color: #888; font-size: 12px; font-style: italic; }
+  .rel-label { color: #aaa; font-size: 12px; }
+
+  .enums {
+    max-width: 1400px;
+    margin: 30px auto 0;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .enum-card {
+    background: #16213e;
+    border: 2px solid #6c63ff;
+    border-radius: 10px;
+    min-width: 180px;
+    overflow: hidden;
+  }
+  .enum-header {
+    background: #6c63ff;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .enum-val {
+    padding: 5px 14px;
+    font-size: 12px;
+    font-family: monospace;
+    color: #ccc;
+    border-bottom: 1px solid #0d1b3e;
+  }
+  .enum-val:last-child { border-bottom: none; }
+  .enum-num { color: #888; }
+
+  .legend {
+    max-width: 1400px;
+    margin: 30px auto 0;
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #aaa;
+  }
+  .legend-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  .note {
+    max-width: 1400px;
+    margin: 30px auto 0;
+    background: #1e2a45;
+    border-left: 4px solid #f5c542;
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #bbb;
+    line-height: 1.6;
+  }
+  .note strong { color: #f5c542; }
+</style>
+</head>
+<body>
+
+<h1>PotatoBank Database Schema</h1>
+<p class="subtitle">Core Banking System &mdash; PostgreSQL / SQLite &mdash; Ledger-Based Architecture</p>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><span class="legend-badge pk">PK</span> Primary Key</div>
+  <div class="legend-item"><span class="legend-badge fk">FK</span> Foreign Key</div>
+  <div class="legend-item"><span class="legend-badge uq">UQ</span> Unique</div>
+  <div class="legend-item"><span class="legend-badge cc">CC</span> Concurrency Token</div>
+  <div class="legend-item"><span class="legend-badge ix">IX</span> Indexed</div>
+</div>
+
+<!-- Tables -->
+<div class="schema" style="margin-top: 30px;">
+
+  <!-- Users -->
+  <div class="table-card">
+    <div class="table-header"><span class="icon">&#128100;</span> Users</div>
+    <div class="columns">
+      <div class="col"><span class="col-type">GUID</span><span class="col-name">Id</span><span class="col-constraint pk">PK</span></div>
+      <div class="col"><span class="col-type">VARCHAR(100)</span><span class="col-name">FullName</span></div>
+      <div class="col"><span class="col-type">VARCHAR(255)</span><span class="col-name">Email</span><span class="col-constraint uq">UQ</span></div>
+      <div class="col"><span class="col-type">TEXT</span><span class="col-name">PasswordHash</span></div>
+      <div class="col"><span class="col-type">DATETIME</span><span class="col-name">CreatedAt</span></div>
+      <div class="col"><span class="col-type">DATETIME?</span><span class="col-name">UpdatedAt</span></div>
+    </div>
+  </div>
+
+  <!-- Accounts -->
+  <div class="table-card">
+    <div class="table-header"><span class="icon">&#127974;</span> Accounts</div>
+    <div class="columns">
+      <div class="col"><span class="col-type">GUID</span><span class="col-name">Id</span><span class="col-constraint pk">PK</span></div>
+      <div class="col"><span class="col-type">VARCHAR(30)</span><span class="col-name">AccountNumber</span><span class="col-constraint uq">UQ</span></div>
+      <div class="col"><span class="col-type">GUID</span><span class="col-name">UserId</span><span class="col-constraint fk">FK</span></div>
+      <div class="col"><span class="col-type">ENUM</span><span class="col-name">Type</span></div>
+      <div class="col"><span class="col-type">ENUM</span><span class="col-name">Status</span></div>
+      <div class="col"><span class="col-type">DECIMAL(18,2)</span><span class="col-name">CachedBalance</span></div>
+      <div class="col"><span class="col-type">VARCHAR(3)</span><span class="col-name">Currency</span></div>
+      <div class="col"><span class="col-type">DATETIME</span><span class="col-name">CreatedAt</span></div>
+      <div class="col"><span class="col-type">DATETIME?</span><span class="col-name">UpdatedAt</span></div>
+      <div class="col"><span class="col-type">BIGINT</span><span class="col-name">RowVersion</span><span class="col-constraint cc">CC</span></div>
+    </div>
+  </div>
+
+  <!-- LedgerEntries -->
+  <div class="table-card">
+    <div class="table-header"><span class="icon">&#128214;</span> LedgerEntries</div>
+    <div class="columns">
+      <div class="col"><span class="col-type">GUID</span><span class="col-name">Id</span><span class="col-constraint pk">PK</span></div>
+      <div class="col"><span class="col-type">GUID</span><span class="col-name">AccountId</span><span class="col-constraint fk">FK</span><span class="col-constraint ix">IX</span></div>
+      <div class="col"><span class="col-type">DECIMAL(18,2)</span><span class="col-name">Amount</span></div>
+      <div class="col"><span class="col-type">ENUM</span><span class="col-name">Type</span></div>
+      <div class="col"><span class="col-type">ENUM</span><span class="col-name">Status</span></div>
+      <div class="col"><span class="col-type">DECIMAL(18,2)</span><span class="col-name">BalanceAfter</span></div>
+      <div class="col"><span class="col-type">GUID?</span><span class="col-name">TransferId</span><span class="col-constraint fk">FK</span><span class="col-constraint ix">IX</span></div>
+      <div class="col"><span class="col-type">VARCHAR(500)</span><span class="col-name">Description</span></div>
+      <div class="col"><span class="col-type">DATETIME</span><span class="col-name">CreatedAt</span><span class="col-constraint ix">IX</span></div>
+    </div>
+  </div>
+
+  <!-- Transfers -->
+  <div class="table-card">
+    <div class="table-header"><span class="icon">&#128260;</span> Transfers</div>
+    <div class="columns">
+      <div class="col"><span class="col-type">GUID</span><span class="col-name">Id</span><span class="col-constraint pk">PK</span></div>
+      <div class="col"><span class="col-type">GUID</span><span class="col-name">SourceAccountId</span><span class="col-constraint fk">FK</span></div>
+      <div class="col"><span class="col-type">GUID</span><span class="col-name">DestinationAccountId</span><span class="col-constraint fk">FK</span></div>
+      <div class="col"><span class="col-type">DECIMAL(18,2)</span><span class="col-name">Amount</span></div>
+      <div class="col"><span class="col-type">VARCHAR(3)</span><span class="col-name">Currency</span></div>
+      <div class="col"><span class="col-type">ENUM</span><span class="col-name">Status</span></div>
+      <div class="col"><span class="col-type">VARCHAR(500)</span><span class="col-name">Description</span></div>
+      <div class="col"><span class="col-type">VARCHAR(100)</span><span class="col-name">IdempotencyKey</span><span class="col-constraint uq">UQ</span></div>
+      <div class="col"><span class="col-type">VARCHAR(500)</span><span class="col-name">FailureReason</span></div>
+      <div class="col"><span class="col-type">DATETIME</span><span class="col-name">CreatedAt</span></div>
+      <div class="col"><span class="col-type">DATETIME?</span><span class="col-name">CompletedAt</span></div>
+    </div>
+  </div>
+
+  <!-- IdempotencyRecords -->
+  <div class="table-card">
+    <div class="table-header"><span class="icon">&#128274;</span> IdempotencyRecords</div>
+    <div class="columns">
+      <div class="col"><span class="col-type">GUID</span><span class="col-name">Id</span><span class="col-constraint pk">PK</span></div>
+      <div class="col"><span class="col-type">VARCHAR(100)</span><span class="col-name">Key</span><span class="col-constraint uq">UQ*</span></div>
+      <div class="col"><span class="col-type">GUID</span><span class="col-name">UserId</span><span class="col-constraint uq">UQ*</span></div>
+      <div class="col"><span class="col-type">VARCHAR(200)</span><span class="col-name">OperationPath</span></div>
+      <div class="col"><span class="col-type">TEXT?</span><span class="col-name">RequestBody</span></div>
+      <div class="col"><span class="col-type">INT?</span><span class="col-name">ResponseStatusCode</span></div>
+      <div class="col"><span class="col-type">TEXT?</span><span class="col-name">ResponseBody</span></div>
+      <div class="col"><span class="col-type">BOOL</span><span class="col-name">IsCompleted</span></div>
+      <div class="col"><span class="col-type">DATETIME</span><span class="col-name">CreatedAt</span></div>
+      <div class="col"><span class="col-type">DATETIME?</span><span class="col-name">CompletedAt</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Relationships -->
+<div class="relations">
+  <h2>Relationships</h2>
+  <div class="rel-row">
+    <span class="rel-from">Users.Id</span>
+    <span class="rel-arrow">1 &mdash;&mdash;&#9654; *</span>
+    <span class="rel-to">Accounts.UserId</span>
+    <span class="rel-label">&mdash; A user owns many accounts</span>
+    <span class="rel-type">(ON DELETE RESTRICT)</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from">Accounts.Id</span>
+    <span class="rel-arrow">1 &mdash;&mdash;&#9654; *</span>
+    <span class="rel-to">LedgerEntries.AccountId</span>
+    <span class="rel-label">&mdash; An account has many ledger entries</span>
+    <span class="rel-type">(ON DELETE RESTRICT)</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from">Transfers.Id</span>
+    <span class="rel-arrow">1 &mdash;&mdash;&#9654; *</span>
+    <span class="rel-to">LedgerEntries.TransferId</span>
+    <span class="rel-label">&mdash; A transfer produces 2 ledger entries (debit + credit)</span>
+    <span class="rel-type">(ON DELETE RESTRICT, NULLABLE)</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from">Accounts.Id</span>
+    <span class="rel-arrow">1 &mdash;&mdash;&#9654; *</span>
+    <span class="rel-to">Transfers.SourceAccountId</span>
+    <span class="rel-label">&mdash; Source account for outgoing transfers</span>
+    <span class="rel-type">(ON DELETE RESTRICT)</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from">Accounts.Id</span>
+    <span class="rel-arrow">1 &mdash;&mdash;&#9654; *</span>
+    <span class="rel-to">Transfers.DestinationAccountId</span>
+    <span class="rel-label">&mdash; Destination account for incoming transfers</span>
+    <span class="rel-type">(ON DELETE RESTRICT)</span>
+  </div>
+</div>
+
+<!-- Enums -->
+<div class="enums">
+  <div class="enum-card">
+    <div class="enum-header">AccountType</div>
+    <div class="enum-val"><span class="enum-num">1</span> Checking</div>
+    <div class="enum-val"><span class="enum-num">2</span> Savings</div>
+  </div>
+  <div class="enum-card">
+    <div class="enum-header">AccountStatus</div>
+    <div class="enum-val"><span class="enum-num">1</span> Active</div>
+    <div class="enum-val"><span class="enum-num">2</span> Frozen</div>
+    <div class="enum-val"><span class="enum-num">3</span> Closed</div>
+  </div>
+  <div class="enum-card">
+    <div class="enum-header">TransactionType</div>
+    <div class="enum-val"><span class="enum-num">1</span> Deposit</div>
+    <div class="enum-val"><span class="enum-num">2</span> Withdrawal</div>
+    <div class="enum-val"><span class="enum-num">3</span> TransferDebit</div>
+    <div class="enum-val"><span class="enum-num">4</span> TransferCredit</div>
+  </div>
+  <div class="enum-card">
+    <div class="enum-header">TransactionStatus</div>
+    <div class="enum-val"><span class="enum-num">1</span> Pending</div>
+    <div class="enum-val"><span class="enum-num">2</span> Completed</div>
+    <div class="enum-val"><span class="enum-num">3</span> Failed</div>
+    <div class="enum-val"><span class="enum-num">4</span> Reversed</div>
+  </div>
+  <div class="enum-card">
+    <div class="enum-header">TransferStatus</div>
+    <div class="enum-val"><span class="enum-num">1</span> Pending</div>
+    <div class="enum-val"><span class="enum-num">2</span> Completed</div>
+    <div class="enum-val"><span class="enum-num">3</span> Failed</div>
+  </div>
+</div>
+
+<!-- Design Notes -->
+<div class="note" style="margin-top: 30px;">
+  <strong>Design Notes:</strong><br>
+  &#8226; <strong>LedgerEntries</strong> is append-only &mdash; the source of truth for all balances. Balance = SUM(Amount) WHERE AccountId = X.<br>
+  &#8226; <strong>CachedBalance</strong> is a materialized cache updated atomically in the same transaction as ledger writes. Never mutated directly.<br>
+  &#8226; <strong>RowVersion</strong> on Accounts enables optimistic concurrency control (OCC) &mdash; prevents lost updates under concurrent access.<br>
+  &#8226; <strong>IdempotencyRecords</strong> use a composite unique index on (Key, UserId) to prevent duplicate financial operations on retry.<br>
+  &#8226; <strong>Transfers</strong> always produce exactly 2 LedgerEntries (debit + credit) in a single atomic transaction &mdash; money is never created or destroyed.<br>
+  &#8226; All foreign keys use <strong>ON DELETE RESTRICT</strong> &mdash; no cascade deletes in a banking system.<br>
+  &#8226; All monetary columns use <strong>DECIMAL(18,2)</strong> for banking-grade precision.<br>
+  &#8226; <strong>UQ*</strong> on IdempotencyRecords indicates a composite unique index on (Key + UserId).
+</div>
+
+</body>
+</html>

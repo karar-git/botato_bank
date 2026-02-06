@@ -24,6 +24,7 @@ else
 }
 
 // ===== AUTHENTICATION =====
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "DEFAULT-DEV-KEY-CHANGE-IN-PRODUCTION-MIN-32-BYTES!!";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -33,10 +34,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "CoreBank",
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "CoreBankClients",
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+                Encoding.UTF8.GetBytes(jwtKey)),
             ClockSkew = TimeSpan.Zero // No tolerance for expired tokens
         };
     });
@@ -128,15 +129,26 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// ===== HEALTH CHECK ENDPOINT =====
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
 // ===== AUTO-MIGRATE DATABASE =====
-using (var scope = app.Services.CreateScope())
+try
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<BankDbContext>();
     db.Database.EnsureCreated();
+    Console.WriteLine("Database initialized successfully.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"WARNING: Database initialization failed: {ex.Message}");
+    Console.WriteLine("The application will start but database operations may fail.");
 }
 
 // Railway sets PORT env var
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
+Console.WriteLine($"Starting on port {port}...");
 app.Run();
