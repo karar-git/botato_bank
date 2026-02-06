@@ -2,18 +2,21 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using CoreBank.Infrastructure.Data;
+using CoreBank.Data;
 using CoreBank.Domain.Entities;
 using CoreBank.Domain.Enums;
 using CoreBank.Domain.Exceptions;
-using CoreBank.Application.DTOs.Requests;
-using CoreBank.Application.DTOs.Responses;
-using CoreBank.Application.Interfaces;
+using CoreBank.DTOs.Requests;
+using CoreBank.DTOs.Responses;
 
-namespace CoreBank.Infrastructure.Services;
+namespace CoreBank.Services;
+
+public interface IAuthService
+{
+    Task<AuthResponse> RegisterAsync(RegisterRequest request);
+    Task<AuthResponse> LoginAsync(LoginRequest request);
+}
 
 public class AuthService : IAuthService
 {

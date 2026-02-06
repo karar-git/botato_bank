@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace CoreBank.Application.DTOs.Requests;
+namespace CoreBank.DTOs.Requests;
 
 public class RegisterRequest
 {

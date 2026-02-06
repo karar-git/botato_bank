@@ -16,9 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CoreBank.Domain\CoreBank.Domain.csproj" />
-    <ProjectReference Include="..\..\src\CoreBank.Application\CoreBank.Application.csproj" />
-    <ProjectReference Include="..\..\src\CoreBank.Infrastructure\CoreBank.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\CoreBank.csproj" />
   </ItemGroup>
 
 </Project>
