@@ -7,12 +7,32 @@
 
   let authenticated = isAuthenticated();
   let user = null;
+  let switchingRole = false;
+
+  const allRoles = ['Customer', 'Merchant', 'Employee', 'Admin'];
 
   async function handleLogin(event) {
     const { token, user: u } = event.detail;
     setToken(token);
     user = u;
     authenticated = true;
+  }
+
+  async function handleRoleSwitch(event) {
+    const newRole = event.target.value;
+    if (!newRole || newRole === user.role) return;
+    switchingRole = true;
+    try {
+      const res = await api.switchRole(newRole);
+      setToken(res.token);
+      user = res.user;
+    } catch (err) {
+      alert('Failed to switch role: ' + (err.message || err));
+      // Reset select back to current role
+      event.target.value = user.role;
+    } finally {
+      switchingRole = false;
+    }
   }
 
   function handleLogout() {
@@ -41,6 +61,16 @@
           {#if user.role}
             <span class="role-tag">{user.role}</span>
           {/if}
+          <select
+            class="role-switcher"
+            value={user.role}
+            on:change={handleRoleSwitch}
+            disabled={switchingRole}
+          >
+            {#each allRoles as role}
+              <option value={role}>{role}</option>
+            {/each}
+          </select>
           <button class="btn-logout" on:click={handleLogout}>Logout</button>
         </div>
       {/if}
@@ -135,6 +165,24 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+  }
+  .role-switcher {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .role-switcher:hover { border-color: rgba(255,255,255,0.6); }
+  .role-switcher:focus { border-color: #4299e1; }
+  .role-switcher:disabled { opacity: 0.5; cursor: wait; }
+  .role-switcher option {
+    background: #1a1a2e;
+    color: white;
   }
   .btn-logout {
     background: transparent;

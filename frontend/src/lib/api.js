@@ -44,6 +44,7 @@ export const api = {
   },
   login: (data) => request('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   me: () => request('/auth/me'),
+  switchRole: (role) => request('/auth/switch-role', { method: 'POST', body: JSON.stringify({ role }) }),
 
   // Accounts
   getAccounts: () => request('/accounts'),
