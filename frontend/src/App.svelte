@@ -31,7 +31,7 @@
 <main>
   <header>
     <div class="header-content">
-      <h1>CoreBank</h1>
+      <h1>PotatoBank</h1>
       <span class="subtitle">Digital Banking System</span>
       {#if authenticated && user}
         <div class="user-info">

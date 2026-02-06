@@ -1,4 +1,4 @@
-# Frontend - CoreBank UI
+# Frontend - PotatoBank UI
 
 ## Vercel Deployment
 
