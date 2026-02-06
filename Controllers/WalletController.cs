@@ -8,7 +8,7 @@ namespace CoreBank.Controllers;
 
 [ApiController]
 [Route("api/accounts/{accountId:guid}")]
-[Authorize(Roles = "Customer,Merchant")]
+[Authorize]
 public class WalletController : ControllerBase
 {
     private readonly IBankingEngine _bankingEngine;
@@ -24,10 +24,10 @@ public class WalletController : ControllerBase
 
     /// <summary>
     /// Deposit funds into an account.
-    /// Only the account owner can deposit.
-    /// Creates a positive ledger entry.
+    /// Only Merchants can deposit (e.g. from bank or cash register).
     /// </summary>
     [HttpPost("deposit")]
+    [Authorize(Roles = "Merchant")]
     public async Task<IActionResult> Deposit(Guid accountId, [FromBody] DepositRequest request)
     {
         if (!IsKycVerified()) return StatusCode(403, new { message = "Your KYC is not verified yet." });
@@ -37,10 +37,10 @@ public class WalletController : ControllerBase
 
     /// <summary>
     /// Withdraw funds from an account.
-    /// Fails with 400 if insufficient funds.
-    /// Creates a negative ledger entry.
+    /// Both Customers and Merchants can withdraw. ATM/branch number required.
     /// </summary>
     [HttpPost("withdraw")]
+    [Authorize(Roles = "Customer,Merchant")]
     public async Task<IActionResult> Withdraw(Guid accountId, [FromBody] WithdrawRequest request)
     {
         if (!IsKycVerified()) return StatusCode(403, new { message = "Your KYC is not verified yet." });
