@@ -8,7 +8,7 @@ namespace CoreBank.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "Customer,Agent,Admin")]
 public class AccountsController : ControllerBase
 {
     private readonly IAccountService _accountService;
@@ -20,12 +20,15 @@ public class AccountsController : ControllerBase
 
     private Guid GetUserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    private bool IsApproved() => User.FindFirstValue("IsApproved") == "True";
+
     /// <summary>
     /// Create a new account (checking or savings).
     /// </summary>
     [HttpPost]
     public async Task<IActionResult> CreateAccount([FromBody] CreateAccountRequest request)
     {
+        if (!IsApproved()) return StatusCode(403, new { message = "Your account is pending approval." });
         var result = await _accountService.CreateAccountAsync(GetUserId(), request);
         return CreatedAtAction(nameof(GetAccount), new { accountId = result.Id }, result);
     }
@@ -37,6 +40,7 @@ public class AccountsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAccounts()
     {
+        if (!IsApproved()) return StatusCode(403, new { message = "Your account is pending approval." });
         var accounts = await _accountService.GetUserAccountsAsync(GetUserId());
         return Ok(accounts);
     }

@@ -12,13 +12,6 @@ public class RegisterRequest
 
     [Required, MinLength(8), MaxLength(128)]
     public string Password { get; set; } = string.Empty;
-
-    /// <summary>
-    /// National ID number extracted from البطاقة الوطنية via OCR.
-    /// Set by the controller after OCR processing — not sent by the client directly.
-    /// </summary>
-    [Required, MaxLength(20)]
-    public string NationalIdNumber { get; set; } = string.Empty;
 }
 
 public class LoginRequest
@@ -92,4 +85,25 @@ public class TransactionHistoryRequest
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
     public string? Type { get; set; } // Filter by transaction type
+}
+
+/// <summary>
+/// Admin approves or rejects a user's registration.
+/// </summary>
+public class ApproveUserRequest
+{
+    [Required]
+    public bool Approved { get; set; }
+
+    [MaxLength(500)]
+    public string? RejectionReason { get; set; }
+}
+
+/// <summary>
+/// Admin can set a user's role.
+/// </summary>
+public class SetUserRoleRequest
+{
+    [Required]
+    public string Role { get; set; } = string.Empty; // "Customer", "Agent", "Operator", "Admin"
 }

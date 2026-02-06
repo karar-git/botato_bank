@@ -37,7 +37,8 @@ export const api = {
     formData.append('fullName', data.fullName);
     formData.append('email', data.email);
     formData.append('password', data.password);
-    formData.append('idCardImage', data.idCardImage);
+    formData.append('idCardFront', data.idCardFront);
+    formData.append('idCardBack', data.idCardBack);
     return request('/auth/register', { method: 'POST', body: formData, isFormData: true });
   },
   login: (data) => request('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
@@ -72,6 +73,15 @@ export const api = {
   },
   exportCsv: (accountId) => `${API_BASE}/accounts/${accountId}/transactions/export/csv`,
   exportXlsx: (accountId) => `${API_BASE}/accounts/${accountId}/transactions/export/xlsx`,
+
+  // Admin
+  getPendingUsers: () => request('/admin/pending-users'),
+  getAllUsers: () => request('/admin/users'),
+  getUser: (userId) => request(`/admin/users/${userId}`),
+  approveUser: (userId, data) =>
+    request(`/admin/users/${userId}/approve`, { method: 'POST', body: JSON.stringify(data) }),
+  setUserRole: (userId, data) =>
+    request(`/admin/users/${userId}/role`, { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export function setToken(token) {

@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using CoreBank.Data;
+using CoreBank.Domain.Entities;
+using CoreBank.Domain.Enums;
 using CoreBank.Middleware;
 using CoreBank.Services;
 
@@ -48,7 +50,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IBankingEngine, BankingEngine>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
-builder.Services.AddHttpClient<IOcrService, OcrService>();
+builder.Services.AddHttpClient(); // For ChatController to call AI service
 
 // ===== CONTROLLERS =====
 builder.Services.AddControllers()
@@ -134,6 +136,24 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<BankDbContext>();
     db.Database.EnsureCreated();
+
+    // Seed default admin user if none exists
+    if (!db.Users.Any(u => u.Role == UserRole.Admin))
+    {
+        var admin = new User
+        {
+            Id = Guid.NewGuid(),
+            FullName = "System Admin",
+            Email = "admin@botatobank.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+            Role = UserRole.Admin,
+            IsApproved = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.Users.Add(admin);
+        db.SaveChanges();
+        Console.WriteLine($"Seeded admin user: admin@botatobank.com / Admin@123");
+    }
 }
 
 // Railway sets PORT env var — bind to 0.0.0.0 so the container is reachable

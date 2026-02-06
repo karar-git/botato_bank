@@ -8,7 +8,7 @@ namespace CoreBank.Controllers;
 
 [ApiController]
 [Route("api/accounts/{accountId:guid}/transactions")]
-[Authorize]
+[Authorize(Roles = "Customer,Agent,Admin")]
 public class TransactionsController : ControllerBase
 {
     private readonly ITransactionService _transactionService;

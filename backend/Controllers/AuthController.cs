@@ -11,17 +11,15 @@ namespace CoreBank.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
-    private readonly IOcrService _ocrService;
 
-    public AuthController(IAuthService authService, IOcrService ocrService)
+    public AuthController(IAuthService authService)
     {
         _authService = authService;
-        _ocrService = ocrService;
     }
 
     /// <summary>
-    /// Register a new user. Requires a photo of البطاقة الوطنية (national ID card).
-    /// The ID card is processed via OCR to extract and verify the national ID number.
+    /// Register a new user. Requires front and back photos of البطاقة الوطنية (national ID card).
+    /// User will be pending until an admin reviews and approves the ID images.
     /// </summary>
     [HttpPost("register")]
     [AllowAnonymous]
@@ -30,46 +28,52 @@ public class AuthController : ControllerBase
         [FromForm] string fullName,
         [FromForm] string email,
         [FromForm] string password,
-        IFormFile idCardImage)
+        IFormFile idCardFront,
+        IFormFile idCardBack)
     {
-        // Validate the image file
-        if (idCardImage == null || idCardImage.Length == 0)
-        {
-            return BadRequest(new { code = "MISSING_ID_CARD", message = "A photo of your البطاقة الوطنية (national ID card) is required." });
-        }
+        // Validate front image
+        if (idCardFront == null || idCardFront.Length == 0)
+            return BadRequest(new { code = "MISSING_ID_FRONT", message = "A photo of the front of your البطاقة الوطنية is required." });
 
-        // Validate file type
+        // Validate back image
+        if (idCardBack == null || idCardBack.Length == 0)
+            return BadRequest(new { code = "MISSING_ID_BACK", message = "A photo of the back of your البطاقة الوطنية is required." });
+
         var allowedTypes = new[] { "image/jpeg", "image/png", "image/jpg", "image/webp" };
-        if (!allowedTypes.Contains(idCardImage.ContentType.ToLower()))
+
+        if (!allowedTypes.Contains(idCardFront.ContentType.ToLower()))
+            return BadRequest(new { code = "INVALID_FILE_TYPE", message = "Front image must be JPEG, PNG, or WebP." });
+
+        if (!allowedTypes.Contains(idCardBack.ContentType.ToLower()))
+            return BadRequest(new { code = "INVALID_FILE_TYPE", message = "Back image must be JPEG, PNG, or WebP." });
+
+        if (idCardFront.Length > 10 * 1024 * 1024)
+            return BadRequest(new { code = "FILE_TOO_LARGE", message = "Front image must be less than 10MB." });
+
+        if (idCardBack.Length > 10 * 1024 * 1024)
+            return BadRequest(new { code = "FILE_TOO_LARGE", message = "Back image must be less than 10MB." });
+
+        // Convert images to base64 for DB storage
+        string frontBase64, backBase64;
+        using (var ms = new MemoryStream())
         {
-            return BadRequest(new { code = "INVALID_FILE_TYPE", message = "Please upload a JPEG, PNG, or WebP image." });
+            await idCardFront.CopyToAsync(ms);
+            frontBase64 = $"data:{idCardFront.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+        }
+        using (var ms = new MemoryStream())
+        {
+            await idCardBack.CopyToAsync(ms);
+            backBase64 = $"data:{idCardBack.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
         }
 
-        // Max 10MB
-        if (idCardImage.Length > 10 * 1024 * 1024)
-        {
-            return BadRequest(new { code = "FILE_TOO_LARGE", message = "Image must be less than 10MB." });
-        }
-
-        // Send image to external Python OCR service for validation
-        using var stream = idCardImage.OpenReadStream();
-        var ocrResult = await _ocrService.ValidateNationalIdAsync(stream, idCardImage.FileName);
-
-        if (!ocrResult.IsValid)
-        {
-            return BadRequest(new { code = "ID_VERIFICATION_FAILED", message = ocrResult.Error });
-        }
-
-        // Build the register request with the extracted national ID number
         var request = new RegisterRequest
         {
             FullName = fullName,
             Email = email,
-            Password = password,
-            NationalIdNumber = ocrResult.NationalIdNumber!
+            Password = password
         };
 
-        var result = await _authService.RegisterAsync(request);
+        var result = await _authService.RegisterAsync(request, frontBase64, backBase64);
         return CreatedAtAction(nameof(Register), result);
     }
 
@@ -94,7 +98,9 @@ public class AuthController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var email = User.FindFirstValue(ClaimTypes.Email);
         var name = User.FindFirstValue(ClaimTypes.Name);
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        var isApproved = User.FindFirstValue("IsApproved");
 
-        return Ok(new { Id = userId, Email = email, Name = name });
+        return Ok(new { Id = userId, Email = email, Name = name, Role = role, IsApproved = isApproved });
     }
 }

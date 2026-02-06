@@ -2,6 +2,7 @@
   import { api, setToken, clearToken, isAuthenticated } from './lib/api.js';
   import Login from './routes/Login.svelte';
   import Dashboard from './routes/Dashboard.svelte';
+  import AdminPanel from './routes/AdminPanel.svelte';
 
   let authenticated = isAuthenticated();
   let user = null;
@@ -36,6 +37,9 @@
       {#if authenticated && user}
         <div class="user-info">
           <span>{user.name || user.email}</span>
+          {#if user.role}
+            <span class="role-tag">{user.role}</span>
+          {/if}
           <button class="btn-logout" on:click={handleLogout}>Logout</button>
         </div>
       {/if}
@@ -45,8 +49,28 @@
   <div class="container">
     {#if !authenticated}
       <Login on:login={handleLogin} />
-    {:else}
+    {:else if user && user.role === 'Admin'}
+      <AdminPanel {user} />
+    {:else if user && !user.isApproved}
+      <!-- Pending Approval Screen -->
+      <div class="pending-card">
+        <div class="pending-icon">&#9203;</div>
+        <h2>Account Pending Review</h2>
+        <p>Your account registration has been received. An administrator will review your ID documents and approve your account shortly.</p>
+        <p class="pending-hint">You will be able to access banking features once your identity has been verified.</p>
+        {#if user.rejectionReason}
+          <div class="rejection-notice">
+            <strong>Your previous submission was not approved:</strong>
+            <p>{user.rejectionReason}</p>
+            <p>Please contact support or re-register with clearer ID images.</p>
+          </div>
+        {/if}
+        <button class="btn-refresh" on:click={() => api.me().then(u => user = u)}>Check Status</button>
+      </div>
+    {:else if user}
       <Dashboard {user} />
+    {:else}
+      <div class="loading">Loading...</div>
     {/if}
   </div>
 </main>
@@ -93,6 +117,15 @@
     gap: 1rem;
     font-size: 0.9rem;
   }
+  .role-tag {
+    background: rgba(255,255,255,0.15);
+    padding: 0.15rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
   .btn-logout {
     background: transparent;
     border: 1px solid #e53e3e;
@@ -108,4 +141,69 @@
     margin: 2rem auto;
     padding: 0 1rem;
   }
+  .loading {
+    text-align: center;
+    padding: 3rem;
+    color: #718096;
+  }
+
+  /* Pending Approval */
+  .pending-card {
+    background: white;
+    border-radius: 12px;
+    padding: 3rem;
+    max-width: 520px;
+    margin: 3rem auto;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .pending-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  .pending-card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: #1a1a2e;
+  }
+  .pending-card p {
+    color: #718096;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+  }
+  .pending-hint {
+    font-size: 0.85rem;
+    color: #a0aec0;
+    margin-top: 0.5rem;
+  }
+  .rejection-notice {
+    background: #fed7d7;
+    color: #c53030;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1.5rem;
+    text-align: left;
+    font-size: 0.85rem;
+  }
+  .rejection-notice strong {
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+  .rejection-notice p {
+    color: #c53030;
+    margin-bottom: 0.3rem;
+  }
+  .btn-refresh {
+    margin-top: 1.5rem;
+    background: #4299e1;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-refresh:hover { opacity: 0.85; }
 </style>

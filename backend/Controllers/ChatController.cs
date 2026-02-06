@@ -10,7 +10,7 @@ namespace CoreBank.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "Customer,Agent,Admin")]
 public class ChatController : ControllerBase
 {
     private readonly BankDbContext _db;

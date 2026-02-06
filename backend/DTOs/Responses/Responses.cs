@@ -14,6 +14,8 @@ public class UserResponse
     public Guid Id { get; set; }
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
+    public bool IsApproved { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 
@@ -83,4 +85,20 @@ public class BalanceReconciliationResponse
     public bool IsReconciled { get; set; }
     public int TotalEntries { get; set; }
     public DateTime ReconciledAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// Extended user info for admin review, includes ID card images.
+/// </summary>
+public class AdminUserResponse
+{
+    public Guid Id { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
+    public bool IsApproved { get; set; }
+    public string? RejectionReason { get; set; }
+    public string? IdCardFrontImage { get; set; }
+    public string? IdCardBackImage { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

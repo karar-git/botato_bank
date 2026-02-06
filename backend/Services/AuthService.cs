@@ -14,7 +14,7 @@ namespace CoreBank.Services;
 
 public interface IAuthService
 {
-    Task<AuthResponse> RegisterAsync(RegisterRequest request);
+    Task<AuthResponse> RegisterAsync(RegisterRequest request, string? idCardFrontBase64, string? idCardBackBase64);
     Task<AuthResponse> LoginAsync(LoginRequest request);
 }
 
@@ -31,50 +31,31 @@ public class AuthService : IAuthService
         _logger = logger;
     }
 
-    public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
+    public async Task<AuthResponse> RegisterAsync(RegisterRequest request, string? idCardFrontBase64, string? idCardBackBase64)
     {
         // Check for existing user
         var exists = await _db.Users.AnyAsync(u => u.Email == request.Email.ToLower().Trim());
         if (exists)
             throw new UserAlreadyExistsException(request.Email);
 
-        // Check for duplicate national ID
-        var idExists = await _db.Users.AnyAsync(u => u.NationalIdNumber == request.NationalIdNumber);
-        if (idExists)
-            throw new InvalidOperationException("A user with this national ID number already exists.");
-
-        // Create user
+        // Create user (not approved yet -- admin must review ID images)
         var user = new User
         {
             Id = Guid.NewGuid(),
             FullName = request.FullName.Trim(),
             Email = request.Email.ToLower().Trim(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            NationalIdNumber = request.NationalIdNumber,
-            IsIdVerified = true,
+            Role = UserRole.Customer,
+            IdCardFrontImage = idCardFrontBase64,
+            IdCardBackImage = idCardBackBase64,
+            IsApproved = false,
             CreatedAt = DateTime.UtcNow
         };
 
-        // Auto-create checking account per banking requirement
-        var account = new Account
-        {
-            Id = Guid.NewGuid(),
-            AccountNumber = GenerateAccountNumber("CHK"),
-            UserId = user.Id,
-            Type = AccountType.Checking,
-            Status = AccountStatus.Active,
-            CachedBalance = 0m,
-            Currency = "USD",
-            CreatedAt = DateTime.UtcNow,
-            RowVersion = 0
-        };
-
         _db.Users.Add(user);
-        _db.Accounts.Add(account);
         await _db.SaveChangesAsync();
 
-        _logger.LogInformation("User {UserId} registered with checking account {AccountNumber}",
-            user.Id, account.AccountNumber);
+        _logger.LogInformation("User {UserId} registered, pending admin approval", user.Id);
 
         return new AuthResponse
         {
@@ -92,7 +73,8 @@ public class AuthService : IAuthService
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             throw new InvalidCredentialsException();
 
-        _logger.LogInformation("User {UserId} logged in", user.Id);
+        _logger.LogInformation("User {UserId} logged in (role={Role}, approved={Approved})",
+            user.Id, user.Role, user.IsApproved);
 
         return new AuthResponse
         {
@@ -113,6 +95,8 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, user.FullName),
+            new Claim(ClaimTypes.Role, user.Role.ToString()),
+            new Claim("IsApproved", user.IsApproved.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -137,11 +121,13 @@ public class AuthService : IAuthService
         return $"{prefix}-{datePart}-{randomPart}";
     }
 
-    private static UserResponse MapUserResponse(User user) => new()
+    internal static UserResponse MapUserResponse(User user) => new()
     {
         Id = user.Id,
         FullName = user.FullName,
         Email = user.Email,
+        Role = user.Role.ToString(),
+        IsApproved = user.IsApproved,
         CreatedAt = user.CreatedAt
     };
 }

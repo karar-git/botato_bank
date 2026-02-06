@@ -1,5 +1,13 @@
 namespace CoreBank.Domain.Enums;
 
+public enum UserRole
+{
+    Customer = 1,
+    Agent = 2,
+    Operator = 3,
+    Admin = 4
+}
+
 public enum AccountType
 {
     Checking = 1,

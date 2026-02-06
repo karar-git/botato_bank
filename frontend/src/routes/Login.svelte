@@ -11,14 +11,24 @@
   let email = '';
   let password = '';
   let fullName = '';
-  let idCardImage = null;
-  let idCardFileName = '';
+  let idCardFront = null;
+  let idCardFrontName = '';
+  let idCardBack = null;
+  let idCardBackName = '';
 
-  function handleFileChange(e) {
+  function handleFrontChange(e) {
     const file = e.target.files[0];
     if (file) {
-      idCardImage = file;
-      idCardFileName = file.name;
+      idCardFront = file;
+      idCardFrontName = file.name;
+    }
+  }
+
+  function handleBackChange(e) {
+    const file = e.target.files[0];
+    if (file) {
+      idCardBack = file;
+      idCardBackName = file.name;
     }
   }
 
@@ -28,12 +38,12 @@
     try {
       let result;
       if (mode === 'register') {
-        if (!idCardImage) {
-          error = 'Please upload a photo of your national ID card (البطاقة الوطنية)';
+        if (!idCardFront || !idCardBack) {
+          error = 'Please upload both front and back photos of your national ID card (البطاقة الوطنية)';
           loading = false;
           return;
         }
-        result = await api.register({ fullName, email, password, idCardImage });
+        result = await api.register({ fullName, email, password, idCardFront, idCardBack });
       } else {
         result = await api.login({ email, password });
       }
@@ -79,18 +89,32 @@
 
       {#if mode === 'register'}
         <div class="field">
-          <label for="idCard">National ID Card (البطاقة الوطنية)</label>
-          <div class="file-upload" class:has-file={idCardFileName}>
-            <input id="idCard" type="file" accept="image/jpeg,image/png,image/webp" on:change={handleFileChange} required />
+          <label for="idCardFront">ID Card - Front (الوجه الأمامي)</label>
+          <div class="file-upload" class:has-file={idCardFrontName}>
+            <input id="idCardFront" type="file" accept="image/jpeg,image/png,image/webp" on:change={handleFrontChange} required />
             <div class="file-upload-label">
-              {#if idCardFileName}
-                <span class="file-name">{idCardFileName}</span>
+              {#if idCardFrontName}
+                <span class="file-name">{idCardFrontName}</span>
               {:else}
-                <span class="file-placeholder">Upload a clear photo of your ID card</span>
+                <span class="file-placeholder">Upload front of your ID card</span>
               {/if}
             </div>
           </div>
-          <p class="field-hint">Upload a clear photo of your البطاقة الوطنية for identity verification</p>
+        </div>
+
+        <div class="field">
+          <label for="idCardBack">ID Card - Back (الوجه الخلفي)</label>
+          <div class="file-upload" class:has-file={idCardBackName}>
+            <input id="idCardBack" type="file" accept="image/jpeg,image/png,image/webp" on:change={handleBackChange} required />
+            <div class="file-upload-label">
+              {#if idCardBackName}
+                <span class="file-name">{idCardBackName}</span>
+              {:else}
+                <span class="file-placeholder">Upload back of your ID card</span>
+              {/if}
+            </div>
+          </div>
+          <p class="field-hint">An admin will review your ID for verification before activating your account.</p>
         </div>
       {/if}
 
