@@ -22,6 +22,7 @@ public class BankDbContext : DbContext
     public DbSet<LedgerEntry> LedgerEntries => Set<LedgerEntry>();
     public DbSet<Transfer> Transfers => Set<Transfer>();
     public DbSet<IdempotencyRecord> IdempotencyRecords => Set<IdempotencyRecord>();
+    public DbSet<DebitCard> DebitCards => Set<DebitCard>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -125,6 +126,32 @@ public class BankDbContext : DbContext
             
             // Composite unique index: idempotency is scoped per user
             entity.HasIndex(i => new { i.Key, i.UserId }).IsUnique();
+        });
+
+        // ===== DEBIT CARD =====
+        modelBuilder.Entity<DebitCard>(entity =>
+        {
+            entity.ToTable("DebitCards");
+            entity.HasKey(d => d.Id);
+            entity.HasIndex(d => d.CardNumber).IsUnique();
+            entity.Property(d => d.CardNumber).IsRequired().HasMaxLength(19);
+            entity.Property(d => d.CardholderName).IsRequired().HasMaxLength(100);
+            entity.Property(d => d.ExpiryDate).IsRequired().HasMaxLength(4);
+            entity.Property(d => d.CvvHash).IsRequired();
+            entity.Property(d => d.DailyLimit).HasColumnType("decimal(18,2)");
+
+            // One card per account (enforced by unique index)
+            entity.HasIndex(d => d.AccountId).IsUnique();
+
+            entity.HasOne(d => d.Account)
+                .WithMany()
+                .HasForeignKey(d => d.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

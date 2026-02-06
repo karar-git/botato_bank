@@ -95,9 +95,16 @@ export const api = {
   // Employee
   uploadCsv: (file) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('csvFile', file);
     return request('/employee/csv-upload', { method: 'POST', body: formData, isFormData: true });
   },
+
+  // Debit Cards
+  getCards: () => request('/debitcards'),
+  createCard: (data) => request('/debitcards', { method: 'POST', body: JSON.stringify(data) }),
+  getCard: (cardId) => request(`/debitcards/${cardId}`),
+  updateCardStatus: (cardId, status) =>
+    request(`/debitcards/${cardId}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
 };
 
 export function setToken(token) {

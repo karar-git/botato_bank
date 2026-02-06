@@ -17,6 +17,8 @@
   let showWithdraw = false;
   let showTransfer = false;
   let showCreateAccount = false;
+  let showCreateCard = false;
+  let showCards = false;
 
   // Form state
   let depositAmount = '';
@@ -27,10 +29,19 @@
   let transferAmount = '';
   let transferDesc = '';
   let newAccountType = 'Savings';
+  let cardDailyLimit = '5000';
+
+  // Debit cards
+  let cards = [];
+  let newCardDetails = null; // shown once after creation
+  let cardsLoading = false;
 
   let actionLoading = false;
 
-  onMount(loadAccounts);
+  onMount(() => {
+    loadAccounts();
+    loadCards();
+  });
 
   async function loadAccounts() {
     loading = true;
@@ -149,6 +160,49 @@
     }
   }
 
+  async function loadCards() {
+    cardsLoading = true;
+    try {
+      cards = await api.getCards();
+    } catch (err) {
+      console.error('Failed to load cards', err);
+    } finally {
+      cardsLoading = false;
+    }
+  }
+
+  async function handleCreateCard() {
+    actionLoading = true; clearMessages();
+    try {
+      const result = await api.createCard({
+        accountId: selectedAccount.id,
+        dailyLimit: parseFloat(cardDailyLimit)
+      });
+      newCardDetails = result;
+      success = 'Debit card issued successfully! Save your card details now — the CVV will not be shown again.';
+      showCreateCard = false;
+      cardDailyLimit = '5000';
+      await loadCards();
+    } catch (err) {
+      error = err.message || 'Failed to create debit card';
+    } finally { actionLoading = false; }
+  }
+
+  async function handleCardStatusChange(cardId, newStatus) {
+    clearMessages();
+    try {
+      await api.updateCardStatus(cardId, newStatus);
+      success = `Card ${newStatus.toLowerCase()} successfully`;
+      await loadCards();
+    } catch (err) {
+      error = err.message || 'Failed to update card status';
+    }
+  }
+
+  function getCardForAccount(accountId) {
+    return cards.find(c => c.accountId === accountId && c.status !== 'Cancelled');
+  }
+
   function formatDate(d) {
     return new Date(d).toLocaleString();
   }
@@ -190,10 +244,15 @@
         </div>
         {#each accounts as account}
           <button
-            class="account-card {selectedAccount?.id === account.id ? 'selected' : ''}"
+            class="account-card {selectedAccount?.id === account.id ? 'selected' : ''} type-{account.type.toLowerCase()}"
             on:click={() => selectAccount(account)}
           >
-            <div class="acc-type">{account.type}</div>
+            <div class="acc-type-row">
+              <span class="acc-type-icon">
+                {#if account.type === 'Checking'}&#128179;{:else if account.type === 'Savings'}&#128176;{:else}&#127970;{/if}
+              </span>
+              <span class="acc-type">{account.type}</span>
+            </div>
             <div class="acc-number">{account.accountNumber}</div>
             <div class="acc-balance">${account.balance.toFixed(2)}</div>
           </button>
@@ -216,14 +275,76 @@
               </div>
             </div>
 
+            <!-- Account type info -->
+            {#if selectedAccount.type === 'Savings'}
+              <div class="account-type-info savings-info">Savings accounts earn interest. Outgoing transfers are not permitted.</div>
+            {:else if selectedAccount.type === 'Business'}
+              <div class="account-type-info business-info">Business account for merchant operations. Higher transaction limits.</div>
+            {:else}
+              <div class="account-type-info checking-info">Standard checking account with full banking operations.</div>
+            {/if}
+
             <div class="actions">
               <button class="btn btn-deposit" on:click={() => { showDeposit = true; clearMessages(); }}>Deposit</button>
               <button class="btn btn-withdraw" on:click={() => { showWithdraw = true; clearMessages(); }}>Withdraw</button>
-              <button class="btn btn-transfer" on:click={() => { showTransfer = true; clearMessages(); }}>Transfer</button>
+              {#if selectedAccount.type !== 'Savings'}
+                <button class="btn btn-transfer" on:click={() => { showTransfer = true; clearMessages(); }}>Transfer</button>
+              {/if}
+              {#if !getCardForAccount(selectedAccount.id)}
+                <button class="btn btn-card" on:click={() => { showCreateCard = true; clearMessages(); }}>Issue Card</button>
+              {/if}
               <button class="btn btn-reconcile" on:click={handleReconcile}>Reconcile</button>
               <button class="btn btn-export" on:click={() => downloadExport('csv')}>CSV</button>
               <button class="btn btn-export" on:click={() => downloadExport('xlsx')}>XLSX</button>
             </div>
+
+            <!-- Debit Card for this account -->
+            {#if getCardForAccount(selectedAccount.id)}
+              {@const card = getCardForAccount(selectedAccount.id)}
+              <div class="card-section">
+                <div class="debit-card {card.status.toLowerCase()}">
+                  <div class="card-chip"></div>
+                  <div class="card-number">{card.maskedCardNumber}</div>
+                  <div class="card-bottom">
+                    <div class="card-holder">
+                      <span class="card-label">CARDHOLDER</span>
+                      <span class="card-value">{card.cardholderName}</span>
+                    </div>
+                    <div class="card-expiry">
+                      <span class="card-label">EXPIRES</span>
+                      <span class="card-value">{card.expiryDate}</span>
+                    </div>
+                    <div class="card-status-badge status-{card.status.toLowerCase()}">{card.status}</div>
+                  </div>
+                  <div class="card-limit">Daily limit: ${card.dailyLimit.toFixed(0)}</div>
+                </div>
+                <div class="card-actions">
+                  {#if card.status === 'Active'}
+                    <button class="btn btn-freeze" on:click={() => handleCardStatusChange(card.id, 'Frozen')}>Freeze Card</button>
+                  {:else if card.status === 'Frozen'}
+                    <button class="btn btn-unfreeze" on:click={() => handleCardStatusChange(card.id, 'Active')}>Unfreeze</button>
+                  {/if}
+                  {#if card.status !== 'Cancelled'}
+                    <button class="btn btn-cancel-card" on:click={() => handleCardStatusChange(card.id, 'Cancelled')}>Cancel Card</button>
+                  {/if}
+                </div>
+              </div>
+            {/if}
+
+            <!-- New Card Details (shown once) -->
+            {#if newCardDetails && newCardDetails.accountId === selectedAccount.id}
+              <div class="new-card-reveal">
+                <h4>Your New Card Details</h4>
+                <p class="card-warning">Save these details now. The CVV will NOT be shown again.</p>
+                <div class="card-details-grid">
+                  <div><span class="detail-label">Card Number</span><span class="detail-value mono">{newCardDetails.cardNumber}</span></div>
+                  <div><span class="detail-label">Cardholder</span><span class="detail-value">{newCardDetails.cardholderName}</span></div>
+                  <div><span class="detail-label">Expiry</span><span class="detail-value">{newCardDetails.expiryDate}</span></div>
+                  <div><span class="detail-label">CVV</span><span class="detail-value cvv-highlight">{newCardDetails.cvv}</span></div>
+                </div>
+                <button class="btn btn-dismiss" on:click={() => newCardDetails = null}>I've saved my details</button>
+              </div>
+            {/if}
 
             <!-- Transaction History -->
             <div class="tx-section">
@@ -357,15 +478,38 @@
           <div class="field">
             <label>Account Type</label>
             <select bind:value={newAccountType}>
-              <option value="Checking">Checking</option>
-              <option value="Savings">Savings</option>
-              <option value="Business">Business</option>
+              <option value="Checking">Checking - Full banking operations</option>
+              <option value="Savings">Savings - Deposit & withdraw only</option>
+              {#if user.role === 'Merchant'}
+                <option value="Business">Business - Merchant operations</option>
+              {/if}
             </select>
           </div>
           <div class="modal-actions">
             <button type="button" class="btn btn-cancel" on:click={() => showCreateAccount = false}>Cancel</button>
             <button type="submit" class="btn btn-deposit" disabled={actionLoading}>
               {actionLoading ? 'Creating...' : 'Create Account'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  {/if}
+
+  {#if showCreateCard}
+    <div class="modal-backdrop" on:click={() => showCreateCard = false}>
+      <div class="modal" on:click|stopPropagation>
+        <h3>Issue Debit Card</h3>
+        <p class="modal-subtitle">A virtual debit card will be issued for your {selectedAccount.type} account ({selectedAccount.accountNumber}).</p>
+        <form on:submit|preventDefault={handleCreateCard}>
+          <div class="field">
+            <label>Daily Spending Limit ($)</label>
+            <input type="number" step="100" min="100" max="100000" bind:value={cardDailyLimit} required />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-cancel" on:click={() => showCreateCard = false}>Cancel</button>
+            <button type="submit" class="btn btn-card" disabled={actionLoading}>
+              {actionLoading ? 'Issuing...' : 'Issue Card'}
             </button>
           </div>
         </form>
@@ -425,8 +569,24 @@
   .account-card:hover { border-color: #bee3f8; }
   .account-card.selected { border-color: #4299e1; background: #ebf8ff; }
   .acc-type { font-size: 0.75rem; font-weight: 600; color: #718096; text-transform: uppercase; }
+  .acc-type-row { display: flex; align-items: center; gap: 0.3rem; }
+  .acc-type-icon { font-size: 1rem; }
   .acc-number { font-size: 0.8rem; color: #4a5568; margin: 0.2rem 0; font-family: monospace; }
   .acc-balance { font-size: 1.2rem; font-weight: 700; color: #1a1a2e; }
+  .type-checking.selected { border-color: #4299e1; background: #ebf8ff; }
+  .type-savings.selected { border-color: #48bb78; background: #f0fff4; }
+  .type-business.selected { border-color: #9f7aea; background: #faf5ff; }
+
+  /* Account type info banner */
+  .account-type-info {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+  }
+  .checking-info { background: #ebf8ff; color: #2b6cb0; border-left: 3px solid #4299e1; }
+  .savings-info { background: #f0fff4; color: #276749; border-left: 3px solid #48bb78; }
+  .business-info { background: #faf5ff; color: #6b46c1; border-left: 3px solid #9f7aea; }
 
   /* Main */
   .main-content {
@@ -457,9 +617,14 @@
   .btn-deposit { background: #48bb78; color: white; }
   .btn-withdraw { background: #ed8936; color: white; }
   .btn-transfer { background: #4299e1; color: white; }
+  .btn-card { background: #667eea; color: white; }
   .btn-reconcile { background: #9f7aea; color: white; }
   .btn-export { background: #718096; color: white; }
   .btn-cancel { background: #e2e8f0; color: #4a5568; }
+  .btn-freeze { background: #3182ce; color: white; }
+  .btn-unfreeze { background: #48bb78; color: white; }
+  .btn-cancel-card { background: #e53e3e; color: white; }
+  .btn-dismiss { background: #4299e1; color: white; margin-top: 1rem; }
 
   /* Transaction Table */
   .tx-section h3 { font-size: 1rem; margin-bottom: 0.8rem; color: #2d3748; }
@@ -510,5 +675,115 @@
     .layout { grid-template-columns: 1fr; }
     .detail-header { flex-direction: column; gap: 1rem; }
     .balance-display { text-align: left; }
+  }
+
+  /* Debit Card Visual */
+  .card-section { margin-bottom: 1.5rem; }
+  .debit-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: white;
+    border-radius: 14px;
+    padding: 1.5rem;
+    max-width: 380px;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    font-family: 'Courier New', monospace;
+  }
+  .debit-card.frozen {
+    background: linear-gradient(135deg, #4a5568 0%, #718096 50%, #a0aec0 100%);
+  }
+  .debit-card.cancelled {
+    background: linear-gradient(135deg, #742a2a 0%, #9b2c2c 50%, #c53030 100%);
+    opacity: 0.6;
+  }
+  .card-chip {
+    width: 40px; height: 28px;
+    background: linear-gradient(135deg, #d4af37, #f0e68c);
+    border-radius: 5px;
+    margin-bottom: 1.2rem;
+  }
+  .card-number {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  .card-bottom {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+  }
+  .card-label {
+    display: block;
+    font-size: 0.55rem;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .card-value {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .card-status-badge {
+    margin-left: auto;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .status-active { background: rgba(72, 187, 120, 0.3); color: #9ae6b4; }
+  .status-frozen { background: rgba(66, 153, 225, 0.3); color: #90cdf4; }
+  .status-cancelled { background: rgba(229, 62, 62, 0.3); color: #feb2b2; }
+  .card-limit {
+    margin-top: 0.8rem;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.5);
+  }
+  .card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+
+  /* New card reveal */
+  .new-card-reveal {
+    background: #fffff0;
+    border: 2px solid #d69e2e;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .new-card-reveal h4 { font-size: 1rem; color: #744210; margin-bottom: 0.3rem; }
+  .card-warning { font-size: 0.8rem; color: #c05621; font-weight: 600; margin-bottom: 1rem; }
+  .card-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+  .detail-label {
+    display: block;
+    font-size: 0.7rem;
+    color: #718096;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .detail-value {
+    font-size: 1rem;
+    color: #1a1a2e;
+    font-weight: 700;
+  }
+  .mono { font-family: monospace; letter-spacing: 1px; }
+  .cvv-highlight {
+    background: #fed7d7;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    color: #c53030;
+  }
+  .modal-subtitle {
+    font-size: 0.85rem;
+    color: #718096;
+    margin-bottom: 1rem;
   }
 </style>
