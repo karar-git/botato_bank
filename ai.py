@@ -13,8 +13,8 @@ client = OpenAI(
     default_headers={"Authorization": f"Key {FAL_KEY}"},
 )
 
-VISION_MODEL = "google/gemini-2.5-flash-preview"
-CHAT_MODEL = "google/gemini-2.5-flash-preview"
+VISION_MODEL = "google/gemini-2.5-flash"
+CHAT_MODEL = "google/gemini-2.5-flash"
 
 
 def validate_national_id(image_bytes: bytes) -> dict:
