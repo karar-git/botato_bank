@@ -11,6 +11,16 @@
   let email = '';
   let password = '';
   let fullName = '';
+  let idCardImage = null;
+  let idCardFileName = '';
+
+  function handleFileChange(e) {
+    const file = e.target.files[0];
+    if (file) {
+      idCardImage = file;
+      idCardFileName = file.name;
+    }
+  }
 
   async function handleSubmit() {
     loading = true;
@@ -18,7 +28,12 @@
     try {
       let result;
       if (mode === 'register') {
-        result = await api.register({ fullName, email, password });
+        if (!idCardImage) {
+          error = 'Please upload a photo of your national ID card (البطاقة الوطنية)';
+          loading = false;
+          return;
+        }
+        result = await api.register({ fullName, email, password, idCardImage });
       } else {
         result = await api.login({ email, password });
       }
@@ -61,6 +76,23 @@
         <label for="password">Password</label>
         <input id="password" type="password" bind:value={password} required minlength="8" placeholder="Min 8 characters" />
       </div>
+
+      {#if mode === 'register'}
+        <div class="field">
+          <label for="idCard">National ID Card (البطاقة الوطنية)</label>
+          <div class="file-upload" class:has-file={idCardFileName}>
+            <input id="idCard" type="file" accept="image/jpeg,image/png,image/webp" on:change={handleFileChange} required />
+            <div class="file-upload-label">
+              {#if idCardFileName}
+                <span class="file-name">{idCardFileName}</span>
+              {:else}
+                <span class="file-placeholder">Upload a clear photo of your ID card</span>
+              {/if}
+            </div>
+          </div>
+          <p class="field-hint">Upload a clear photo of your البطاقة الوطنية for identity verification</p>
+        </div>
+      {/if}
 
       <button type="submit" class="btn-primary" disabled={loading}>
         {#if loading}Processing...{:else}{mode === 'login' ? 'Sign In' : 'Register'}{/if}
@@ -137,4 +169,25 @@
     font-size: 0.9rem;
   }
   .link-btn:hover { text-decoration: underline; }
+  .file-upload {
+    position: relative;
+    border: 2px dashed #e2e8f0;
+    border-radius: 6px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .file-upload:hover, .file-upload.has-file { border-color: #4299e1; }
+  .file-upload input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .file-placeholder { color: #a0aec0; font-size: 0.9rem; }
+  .file-name { color: #2d3748; font-weight: 600; font-size: 0.9rem; }
+  .field-hint { font-size: 0.75rem; color: #a0aec0; margin-top: 0.3rem; }
 </style>

@@ -10,7 +10,7 @@ function getToken() {
 async function request(path, options = {}) {
   const token = getToken();
   const headers = {
-    'Content-Type': 'application/json',
+    ...(options.isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
@@ -32,7 +32,14 @@ async function request(path, options = {}) {
 
 export const api = {
   // Auth
-  register: (data) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+  register: (data) => {
+    const formData = new FormData();
+    formData.append('fullName', data.fullName);
+    formData.append('email', data.email);
+    formData.append('password', data.password);
+    formData.append('idCardImage', data.idCardImage);
+    return request('/auth/register', { method: 'POST', body: formData, isFormData: true });
+  },
   login: (data) => request('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   me: () => request('/auth/me'),
 

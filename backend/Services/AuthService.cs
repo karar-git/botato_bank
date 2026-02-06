@@ -38,6 +38,11 @@ public class AuthService : IAuthService
         if (exists)
             throw new UserAlreadyExistsException(request.Email);
 
+        // Check for duplicate national ID
+        var idExists = await _db.Users.AnyAsync(u => u.NationalIdNumber == request.NationalIdNumber);
+        if (idExists)
+            throw new InvalidOperationException("A user with this national ID number already exists.");
+
         // Create user
         var user = new User
         {
@@ -45,6 +50,8 @@ public class AuthService : IAuthService
             FullName = request.FullName.Trim(),
             Email = request.Email.ToLower().Trim(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            NationalIdNumber = request.NationalIdNumber,
+            IsIdVerified = true,
             CreatedAt = DateTime.UtcNow
         };
 

@@ -21,6 +21,17 @@ public class User
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
 
+    /// <summary>
+    /// National ID number extracted from البطاقة الوطنية via OCR during registration.
+    /// </summary>
+    [Required, MaxLength(20)]
+    public string NationalIdNumber { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether the national ID has been verified via OCR.
+    /// </summary>
+    public bool IsIdVerified { get; set; } = false;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAt { get; set; }

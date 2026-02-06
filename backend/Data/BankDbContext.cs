@@ -36,6 +36,8 @@ public class BankDbContext : DbContext
             entity.Property(u => u.Email).IsRequired().HasMaxLength(255);
             entity.Property(u => u.FullName).IsRequired().HasMaxLength(100);
             entity.Property(u => u.PasswordHash).IsRequired();
+            entity.Property(u => u.NationalIdNumber).IsRequired().HasMaxLength(20);
+            entity.HasIndex(u => u.NationalIdNumber).IsUnique();
         });
 
         // ===== ACCOUNT =====
