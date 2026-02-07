@@ -14,7 +14,8 @@
       messages = [
         {
           role: "assistant",
-          content: "مرحبا! أنا المساعد البنكي الذكي. كيف يمكنني مساعدتك اليوم؟",
+          content:
+            "مرحبا! أنا مساعد Atomic Bank الذكي. كيف يمكنني مساعدتك اليوم؟",
         },
       ];
     }
@@ -86,11 +87,11 @@
     <div class="chat-panel">
       <div class="chat-header">
         <div class="chat-title">
-          <span class="chat-icon"><Bot size={22} strokeWidth={2} /></span>
+          <span class="chat-icon"><Bot size={28} strokeWidth={2} /></span>
           <span class="title-text">المساعد البنكي</span>
         </div>
         <button class="close-btn" on:click={toggle}>
-          <CircleX size={22} strokeWidth={2} />
+          <CircleX size={24} strokeWidth={2} />
         </button>
       </div>
 
@@ -283,7 +284,7 @@
   .chat-title {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
   }
 
   .title-text {
@@ -294,25 +295,37 @@
   }
 
   .chat-icon {
-    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    flex-shrink: 0;
   }
 
   .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
     background: rgba(255, 255, 255, 0.1);
     border: none;
     color: white;
-    font-size: 24px;
     cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 8px;
-    line-height: 1;
-    opacity: 0.8;
+    padding: 0;
+    border-radius: 50%;
+    opacity: 0.85;
     transition: all 0.2s ease;
+    flex-shrink: 0;
   }
 
   .close-btn:hover {
     opacity: 1;
     background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
   }
 
   /* Chat Messages Area */
