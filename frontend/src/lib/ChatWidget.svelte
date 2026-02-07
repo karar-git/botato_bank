@@ -1,6 +1,8 @@
 <script>
   import { api } from "./api.js";
   import { Bot, CircleX, SendHorizontal } from "lucide-svelte";
+  import { fly, scale, fade } from "svelte/transition";
+  import { quartOut, quartIn } from "svelte/easing";
 
   let isOpen = false;
   let message = "";
@@ -84,7 +86,11 @@
 <!-- Floating chat bubble -->
 <div class="chat-widget">
   {#if isOpen}
-    <div class="chat-panel">
+    <div
+      class="chat-panel"
+      in:fly={{ y: 20, duration: 400, easing: quartOut }}
+      out:fly={{ y: 20, duration: 300, easing: quartIn }}
+    >
       <div class="chat-header">
         <div class="chat-title">
           <span class="chat-icon"><Bot size={32} strokeWidth={2.5} /></span>
@@ -134,9 +140,21 @@
   <button class="fab" on:click={toggle} class:open={isOpen}>
     <span class="fab-icon">
       {#if isOpen}
-        <CircleX size={30} strokeWidth={2} />
+        <div
+          in:scale={{ duration: 200, delay: 100 }}
+          out:scale={{ duration: 150 }}
+          class="icon-wrapper"
+        >
+          <CircleX size={30} strokeWidth={2} />
+        </div>
       {:else}
-        <Bot size={30} strokeWidth={2} />
+        <div
+          in:scale={{ duration: 200, delay: 100 }}
+          out:scale={{ duration: 150 }}
+          class="icon-wrapper"
+        >
+          <Bot size={30} strokeWidth={2} />
+        </div>
       {/if}
     </span>
   </button>
@@ -197,7 +215,14 @@
     justify-content: center;
     width: 100%;
     height: 100%;
-    line-height: 1;
+    position: relative;
+  }
+
+  .icon-wrapper {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .fab-icon {
@@ -222,7 +247,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: slideUp 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+    /* animation: slideUp 0.35s cubic-bezier(0.25, 0.8, 0.25, 1); - Removed in favor of Svelte transition */
   }
 
   /* Animated gradient border for panel */
@@ -253,16 +278,7 @@
     z-index: 0;
   }
 
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(24px) scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
+  /* @keyframes slideUp removed */
 
   /* Chat Header - Atomic Bank Dark Theme */
   .chat-header {
