@@ -58,7 +58,7 @@
     <!-- 1. HERO SECTION -->
     <section class="hero" id="hero">
         {#if mounted}
-            <div class="hero-content grid-2">
+            <div class="hero-content grid-2 container">
                 <div
                     class="hero-text"
                     in:fly={{
@@ -487,9 +487,15 @@
     }
 
     @keyframes floatCard {
-        0% { transform: translateY(0px) rotateX(0deg); }
-        50% { transform: translateY(-20px) rotateX(2deg); }
-        100% { transform: translateY(0px) rotateX(0deg); }
+        0% {
+            transform: translateY(0px) rotateX(0deg);
+        }
+        50% {
+            transform: translateY(-20px) rotateX(2deg);
+        }
+        100% {
+            transform: translateY(0px) rotateX(0deg);
+        }
     }
 
     .about-panel {
@@ -635,11 +641,21 @@
         padding: 4rem 2rem;
         border-top: 1px solid var(--bg-secondary);
         color: var(--text-muted);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .footer-centered {
+        text-align: center;
+        margin: 0 auto;
+        width: 100%;
     }
 
     .links {
         margin-top: 1.5rem;
         display: flex;
+        justify-content: center;
         gap: 2rem;
         font-size: 0.9rem;
     }

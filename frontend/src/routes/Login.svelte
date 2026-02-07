@@ -1,78 +1,86 @@
 <script>
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { fly } from 'svelte/transition';
-  import { cubicOut } from 'svelte/easing';
-  import { api } from '../lib/api.js';
+    import { createEventDispatcher, onMount } from "svelte";
+    import { fly } from "svelte/transition";
+    import { cubicOut } from "svelte/easing";
+    import { api } from "../lib/api.js";
 
-  const dispatch = createEventDispatcher();
+    const dispatch = createEventDispatcher();
 
-  export let initialMode = 'login';
-  export let navigate;
+    export let initialMode = "login";
+    export let navigate;
 
-  let mode = initialMode;
-  let loading = false;
-  let error = '';
-  let visible = false;
+    let mode = initialMode;
+    let loading = false;
+    let error = "";
+    let visible = false;
 
-  let email = '';
-  let password = '';
-  let fullName = '';
-  let nationalIdNumber = '';
-  let idCardFront = null;
-  let idCardFrontName = '';
-  let idCardBack = null;
-  let idCardBackName = '';
+    let email = "";
+    let password = "";
+    let fullName = "";
+    let nationalIdNumber = "";
+    let idCardFront = null;
+    let idCardFrontName = "";
+    let idCardBack = null;
+    let idCardBackName = "";
 
-  onMount(() => {
-    visible = true;
-  });
+    onMount(() => {
+        visible = true;
+    });
 
-  $: mode = initialMode;
+    $: mode = initialMode;
 
-  function handleFrontChange(e) {
-    const file = e.target.files[0];
-    if (file) {
-      idCardFront = file;
-      idCardFrontName = file.name;
-    }
-  }
-
-  function handleBackChange(e) {
-    const file = e.target.files[0];
-    if (file) {
-      idCardBack = file;
-      idCardBackName = file.name;
-    }
-  }
-
-  async function handleSubmit() {
-    loading = true;
-    error = '';
-    try {
-      let result;
-      if (mode === 'register') {
-        if (!idCardFront || !idCardBack) {
-          error = 'Please upload both front and back photos of your national ID card';
-          loading = false;
-          return;
+    function handleFrontChange(e) {
+        const file = e.target.files[0];
+        if (file) {
+            idCardFront = file;
+            idCardFrontName = file.name;
         }
-        result = await api.register({ fullName, email, password, idCardFront, idCardBack, nationalIdNumber });
-      } else {
-        result = await api.login({ email, password });
-      }
-      dispatch('login', { token: result.token, user: result.user });
-    } catch (err) {
-      error = err.message || 'Authentication failed';
-    } finally {
-      loading = false;
     }
-  }
 
-  function switchMode(newMode) {
-    mode = newMode;
-    error = '';
-    if (navigate) navigate(newMode);
-  }
+    function handleBackChange(e) {
+        const file = e.target.files[0];
+        if (file) {
+            idCardBack = file;
+            idCardBackName = file.name;
+        }
+    }
+
+    async function handleSubmit() {
+        loading = true;
+        error = "";
+        try {
+            let result;
+            if (mode === "register") {
+                if (!idCardFront || !idCardBack) {
+                    error =
+                        "Please upload both front and back photos of your national ID card";
+                    loading = false;
+                    return;
+                }
+                result = await api.register({
+                    fullName,
+                    email,
+                    password,
+                    idCardFront,
+                    idCardBack,
+                    nationalIdNumber,
+                });
+            } else {
+                result = await api.login({ email, password });
+            }
+            dispatch("login", { token: result.token, user: result.user });
+        } catch (err) {
+            error = err.message || "Authentication failed";
+        } finally {
+            loading = false;
+        }
+    }
+
+    function switchMode(newMode) {
+        mode = newMode;
+        error = "";
+        if (navigate) navigate(newMode);
+    }
 </script>
 
 <main class="atomic-app">
@@ -90,7 +98,7 @@
         >
             <div class="glass-panel auth-card">
                 <h1 class="headline">
-                    {#if mode === 'login'}
+                    {#if mode === "login"}
                         <span class="highlight">Welcome</span> Back
                     {:else}
                         <span class="highlight">Create</span> Account
@@ -102,7 +110,7 @@
                 {/if}
 
                 <form on:submit|preventDefault={handleSubmit}>
-                    {#if mode === 'register'}
+                    {#if mode === "register"}
                         <div class="input-group">
                             <label for="fullname">Full Name</label>
                             <input
@@ -133,16 +141,20 @@
                         <input
                             type="password"
                             id="password"
-                            placeholder={mode === 'login' ? 'Enter your password' : 'Create a password (min 8 chars)'}
+                            placeholder={mode === "login"
+                                ? "Enter your password"
+                                : "Create a password (min 8 chars)"}
                             bind:value={password}
                             required
-                            minlength={mode === 'register' ? 8 : undefined}
+                            minlength={mode === "register" ? 8 : undefined}
                         />
                     </div>
 
-                    {#if mode === 'register'}
+                    {#if mode === "register"}
                         <div class="input-group">
-                            <label for="nationalIdNumber">National ID Number</label>
+                            <label for="nationalIdNumber"
+                                >National ID Number</label
+                            >
                             <input
                                 type="text"
                                 id="nationalIdNumber"
@@ -154,46 +166,76 @@
                         </div>
 
                         <div class="id-upload-section">
-                            <label class="section-label">National ID Verification</label>
+                            <label class="section-label"
+                                >National ID Verification</label
+                            >
                             <div class="upload-grid">
-                                <div class="upload-box" class:has-file={idCardFrontName}>
+                                <div
+                                    class="upload-box"
+                                    class:has-file={idCardFrontName}
+                                >
                                     <span class="upload-icon">&#128179;</span>
                                     <span class="upload-text">
-                                        {idCardFrontName || 'Front Side'}
+                                        {idCardFrontName || "Front Side"}
                                     </span>
-                                    <input type="file" accept="image/jpeg,image/png,image/webp" on:change={handleFrontChange} required />
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        on:change={handleFrontChange}
+                                        required
+                                    />
                                 </div>
-                                <div class="upload-box" class:has-file={idCardBackName}>
+                                <div
+                                    class="upload-box"
+                                    class:has-file={idCardBackName}
+                                >
                                     <span class="upload-icon">&#128283;</span>
                                     <span class="upload-text">
-                                        {idCardBackName || 'Back Side'}
+                                        {idCardBackName || "Back Side"}
                                     </span>
-                                    <input type="file" accept="image/jpeg,image/png,image/webp" on:change={handleBackChange} required />
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        on:change={handleBackChange}
+                                        required
+                                    />
                                 </div>
                             </div>
-                            <p class="upload-hint">An admin will review your ID for verification before activating your account.</p>
+                            <p class="upload-hint">
+                                An admin will review your ID for verification
+                                before activating your account.
+                            </p>
                         </div>
                     {/if}
 
-                    <button class="cta-button primary" type="submit" disabled={loading}>
+                    <button
+                        class="cta-button primary"
+                        type="submit"
+                        disabled={loading}
+                    >
                         <span class="btn-text">
-                            {#if loading}Processing...{:else}{mode === 'login' ? 'Login' : 'Register'}{/if}
+                            {#if loading}Processing...{:else}{mode === "login"
+                                    ? "Login"
+                                    : "Register"}{/if}
                         </span>
                     </button>
 
                     <button
                         class="switch-link"
                         type="button"
-                        on:click={() => switchMode(mode === 'login' ? 'register' : 'login')}
+                        on:click={() =>
+                            switchMode(mode === "login" ? "register" : "login")}
                     >
                         <span class="switch-text">
-                            {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}
+                            {mode === "login"
+                                ? "Don't have an account?"
+                                : "Already have an account?"}
                         </span>
-                        {mode === 'login' ? 'Register' : 'Login'}
+                        {mode === "login" ? "Register" : "Login"}
                     </button>
                 </form>
 
-                <button class="back-link" on:click={() => navigate('home')}>
+                <button class="back-link" on:click={() => navigate("home")}>
                     &larr; Back to Home
                 </button>
             </div>
@@ -208,7 +250,7 @@
         width: 100%;
         overflow-y: auto;
         overflow-x: hidden;
-        background: var(--bg-secondary, #ECF0F1);
+        background: var(--bg-secondary, #ecf0f1);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -216,7 +258,10 @@
     }
 
     /* TYPOGRAPHY */
-    h1, label, input, span {
+    h1,
+    label,
+    input,
+    span {
         color: var(--text-main, #2c3e50);
     }
 
@@ -227,11 +272,15 @@
         margin-bottom: 1.5rem;
         text-align: center;
         margin-top: 0;
-        color: var(--brand-dark, #34495E);
+        color: var(--brand-dark, #34495e);
     }
 
     .highlight {
-        background: linear-gradient(135deg, var(--brand-primary, #3498DB) 0%, var(--accent, #F8C957) 100%);
+        background: linear-gradient(
+            135deg,
+            var(--brand-primary, #3498db) 0%,
+            var(--accent, #f8c957) 100%
+        );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
@@ -282,7 +331,7 @@
     input:focus {
         outline: none;
         background: white;
-        border-color: var(--brand-primary, #3498DB);
+        border-color: var(--brand-primary, #3498db);
         box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
     }
 
@@ -327,7 +376,7 @@
 
     .upload-box:hover {
         background: #f0f7ff;
-        border-color: var(--brand-primary, #3498DB);
+        border-color: var(--brand-primary, #3498db);
     }
 
     .upload-box.has-file {
@@ -381,7 +430,7 @@
     .cta-button {
         position: relative;
         padding: 0.9rem 2rem;
-        background: var(--brand-dark, #34495E);
+        background: var(--brand-dark, #34495e);
         border: none;
         border-radius: 50px;
         color: #fff;
@@ -396,7 +445,7 @@
     }
 
     .cta-button:hover {
-        background: var(--brand-primary, #3498DB);
+        background: var(--brand-primary, #3498db);
         transform: scale(1.02);
         box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
     }
@@ -408,7 +457,19 @@
     }
 
     .cta-button.primary {
-        background: var(--brand-dark, #34495E);
+        background: var(--brand-dark, #34495e);
+    }
+
+    .btn-text {
+        background: linear-gradient(
+            135deg,
+            #d1d5db 0%,
+            #ffffff 50%,
+            #e5e7eb 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     /* ANIMATED BORDER GRADIENT */
@@ -421,7 +482,13 @@
         bottom: 0;
         border-radius: inherit;
         padding: 1.5px;
-        background: linear-gradient(90deg, var(--brand-primary, #3498DB), var(--accent, #F8C957), #27ae60, var(--brand-primary, #3498DB));
+        background: linear-gradient(
+            90deg,
+            var(--brand-primary, #3498db),
+            var(--accent, #f8c957),
+            #27ae60,
+            var(--brand-primary, #3498db)
+        );
         background-size: 300% 300%;
         -webkit-mask:
             linear-gradient(#fff 0 0) content-box,
@@ -433,15 +500,19 @@
     }
 
     @keyframes borderRotate {
-        0% { background-position: 0% 50%; }
-        100% { background-position: 100% 50%; }
+        0% {
+            background-position: 0% 50%;
+        }
+        100% {
+            background-position: 100% 50%;
+        }
     }
 
     /* LINKS */
     .switch-link {
         background: none;
         border: none;
-        color: var(--brand-primary, #3498DB);
+        color: var(--brand-primary, #3498db);
         text-decoration: underline;
         cursor: pointer;
         font-family: inherit;
@@ -478,7 +549,7 @@
     }
 
     .back-link:hover {
-        color: var(--brand-primary, #3498DB);
+        color: var(--brand-primary, #3498db);
     }
 
     /* FLOATING ATOMS - subtle light blue/gold blobs */
@@ -495,7 +566,7 @@
     .atom-1 {
         width: 400px;
         height: 400px;
-        background: var(--brand-primary, #3498DB);
+        background: var(--brand-primary, #3498db);
         top: -10%;
         left: -10%;
         animation-delay: 0s;
@@ -511,7 +582,7 @@
     .atom-3 {
         width: 300px;
         height: 300px;
-        background: var(--accent, #F8C957);
+        background: var(--accent, #f8c957);
         top: 40%;
         left: 30%;
         opacity: 0.15;
@@ -529,7 +600,7 @@
     .atom-5 {
         width: 350px;
         height: 350px;
-        background: var(--accent, #F8C957);
+        background: var(--accent, #f8c957);
         bottom: 5%;
         left: 10%;
         opacity: 0.12;
@@ -537,8 +608,12 @@
     }
 
     @keyframes floatAtom {
-        0% { transform: translate(0, 0) scale(1); }
-        100% { transform: translate(30px, -30px) scale(1.1); }
+        0% {
+            transform: translate(0, 0) scale(1);
+        }
+        100% {
+            transform: translate(30px, -30px) scale(1.1);
+        }
     }
 
     .auth-section {
