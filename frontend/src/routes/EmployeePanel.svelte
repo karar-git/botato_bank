@@ -156,16 +156,17 @@ EF345678,1000.00,DEPOSIT</pre>
 
 <style>
   .employee-panel { position: relative; }
-  h2 { font-size: 1.5rem; margin-bottom: 0.3rem; color: #1a1a2e; }
-  .subtitle { color: #718096; font-size: 0.9rem; margin-bottom: 1.5rem; }
+  h2 { font-size: 1.5rem; margin-bottom: 0.3rem; color: #fff; }
+  .subtitle { color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; margin-bottom: 1.5rem; }
 
   /* Alerts */
   .alert {
-    padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 1rem;
+    padding: 0.8rem 1rem; border-radius: 12px; margin-bottom: 1rem;
     display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;
+    backdrop-filter: blur(10px);
   }
-  .alert button { background: none; border: none; cursor: pointer; font-size: 1rem; opacity: 0.6; }
-  .alert-error { background: #fed7d7; color: #c53030; }
+  .alert button { background: none; border: none; cursor: pointer; font-size: 1rem; opacity: 0.6; color: inherit; }
+  .alert-error { background: rgba(229, 62, 62, 0.15); color: #feb2b2; border: 1px solid rgba(229, 62, 62, 0.25); }
 
   /* Upload Section */
   .upload-section {
@@ -175,43 +176,55 @@ EF345678,1000.00,DEPOSIT</pre>
     margin-bottom: 2rem;
   }
   .csv-format {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
     padding: 1.5rem;
   }
-  .csv-format h3 { font-size: 1rem; margin-bottom: 0.5rem; color: #2d3748; }
-  .csv-format p { font-size: 0.85rem; color: #718096; margin-bottom: 0.5rem; }
+  .csv-format h3 { font-size: 1rem; margin-bottom: 0.5rem; color: #fff; }
+  .csv-format p { font-size: 0.85rem; color: rgba(255, 255, 255, 0.55); margin-bottom: 0.5rem; }
   .csv-format code {
     display: inline-block;
-    background: #edf2f7;
+    background: rgba(41, 161, 156, 0.15);
     padding: 0.3rem 0.6rem;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 0.85rem;
-    color: #2d3748;
+    color: #a3f7bf;
     margin-bottom: 0.5rem;
+    border: 1px solid rgba(41, 161, 156, 0.2);
   }
-  .hint { font-size: 0.8rem; line-height: 1.6; }
+  .hint { font-size: 0.8rem; line-height: 1.6; color: rgba(255, 255, 255, 0.5); }
+  .hint strong { color: rgba(255, 255, 255, 0.8); }
+  .hint code {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    color: #fdff84;
+    border: none;
+  }
   .example {
     margin-top: 0.8rem;
-    background: #f7fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
     padding: 0.8rem;
   }
-  .example strong { font-size: 0.8rem; color: #4a5568; }
+  .example strong { font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); }
   .example pre {
     margin-top: 0.3rem;
     font-size: 0.8rem;
-    color: #2d3748;
+    color: rgba(255, 255, 255, 0.7);
     white-space: pre;
     overflow-x: auto;
   }
 
   .upload-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
@@ -220,38 +233,44 @@ EF345678,1000.00,DEPOSIT</pre>
   }
   .file-upload {
     position: relative;
-    border: 2px dashed #e2e8f0;
-    border-radius: 8px;
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
     padding: 2rem;
     text-align: center;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: all 0.2s ease;
   }
-  .file-upload:hover, .file-upload.has-file { border-color: #4299e1; }
+  .file-upload:hover { border-color: rgba(41, 161, 156, 0.5); background: rgba(255, 255, 255, 0.02); }
+  .file-upload.has-file { border-color: #a3f7bf; background: rgba(163, 247, 191, 0.03); }
   .file-upload input[type="file"] {
     position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
   }
-  .file-placeholder { color: #a0aec0; font-size: 0.9rem; }
-  .file-name { color: #2d3748; font-weight: 600; font-size: 0.9rem; }
+  .file-placeholder { color: rgba(255, 255, 255, 0.35); font-size: 0.9rem; }
+  .file-name { color: #a3f7bf; font-weight: 600; font-size: 0.9rem; }
   .upload-actions { display: flex; gap: 0.5rem; }
 
   .btn {
-    padding: 0.6rem 1.2rem; border: none; border-radius: 6px;
-    font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+    padding: 0.6rem 1.2rem; border: none; border-radius: 20px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+    font-family: inherit;
   }
-  .btn:hover { opacity: 0.85; }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-upload { background: #4299e1; color: white; flex: 1; }
-  .btn-reset { background: #e2e8f0; color: #4a5568; }
+  .btn:hover { transform: scale(1.03); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-upload {
+    background: linear-gradient(135deg, rgba(0, 108, 104, 0.8), rgba(41, 161, 156, 0.6));
+    color: white; flex: 1;
+  }
+  .btn-reset { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); }
 
   /* Results */
   .results-section {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
     padding: 1.5rem;
   }
-  .results-section h3 { font-size: 1.1rem; margin-bottom: 1rem; color: #2d3748; }
+  .results-section h3 { font-size: 1.1rem; margin-bottom: 1rem; color: #fff; }
 
   .results-summary {
     display: grid;
@@ -262,39 +281,41 @@ EF345678,1000.00,DEPOSIT</pre>
   .summary-item {
     text-align: center;
     padding: 0.8rem;
-    background: #f7fafc;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
   }
-  .summary-label { display: block; font-size: 0.7rem; font-weight: 600; color: #718096; text-transform: uppercase; }
-  .summary-value { display: block; font-size: 1.3rem; font-weight: 700; color: #1a1a2e; margin-top: 0.2rem; }
-  .summary-success { border-left: 3px solid #48bb78; }
-  .summary-failure { border-left: 3px solid #e53e3e; }
+  .summary-label { display: block; font-size: 0.7rem; font-weight: 600; color: rgba(255, 255, 255, 0.45); text-transform: uppercase; }
+  .summary-value { display: block; font-size: 1.3rem; font-weight: 700; color: #fff; margin-top: 0.2rem; }
+  .summary-success { border-left: 3px solid #a3f7bf; }
+  .summary-failure { border-left: 3px solid #fc8181; }
 
   .results-table {
-    width: 100%; border-collapse: collapse; font-size: 0.8rem;
+    width: 100%; border-collapse: collapse; font-size: 0.8rem; color: rgba(255, 255, 255, 0.8);
   }
   .results-table th {
-    text-align: left; padding: 0.6rem 0.6rem; border-bottom: 2px solid #e2e8f0;
-    color: #718096; font-size: 0.7rem; text-transform: uppercase; background: #f7fafc;
+    text-align: left; padding: 0.6rem 0.6rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.45); font-size: 0.7rem; text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.02);
   }
   .results-table td {
-    padding: 0.5rem 0.6rem; border-bottom: 1px solid #f0f2f5;
+    padding: 0.5rem 0.6rem; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   }
-  .results-table tr:hover { background: #f7fafc; }
-  .row-error { background: #fff5f5; }
-  .row-error:hover { background: #fed7d7; }
+  .results-table tr:hover { background: rgba(255, 255, 255, 0.03); }
+  .row-error { background: rgba(229, 62, 62, 0.06); }
+  .row-error:hover { background: rgba(229, 62, 62, 0.1); }
   .mono { font-family: monospace; font-size: 0.8rem; }
 
   .badge {
     display: inline-block; padding: 0.1rem 0.4rem; border-radius: 10px;
     font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
   }
-  .badge-deposit { background: #c6f6d5; color: #22543d; }
-  .badge-withdraw { background: #feebc8; color: #c05621; }
+  .badge-deposit { background: rgba(72, 187, 120, 0.15); color: #9ae6b4; }
+  .badge-withdraw { background: rgba(237, 137, 54, 0.15); color: #fbd38d; }
 
-  .status-ok { color: #22543d; font-weight: 700; }
-  .status-fail { color: #c53030; font-weight: 700; }
-  .error-cell { color: #c53030; font-size: 0.75rem; max-width: 200px; }
+  .status-ok { color: #a3f7bf; font-weight: 700; }
+  .status-fail { color: #feb2b2; font-weight: 700; }
+  .error-cell { color: #feb2b2; font-size: 0.75rem; max-width: 200px; }
 
   @media (max-width: 768px) {
     .upload-section { grid-template-columns: 1fr; }
