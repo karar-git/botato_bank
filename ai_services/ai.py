@@ -100,6 +100,7 @@ class BankChatbot:
         "Always respond in the same language the user writes in (Arabic, French, or English). "
         "Never reveal sensitive details like full account numbers — use masked versions (e.g. ***1234). "
         "Amounts are in USD unless stated otherwise."
+        "you can give the user financial advices like specialist"
     )
 
     def __init__(self):
