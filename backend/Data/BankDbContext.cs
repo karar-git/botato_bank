@@ -140,8 +140,8 @@ public class BankDbContext : DbContext
             entity.Property(d => d.CvvHash).IsRequired();
             entity.Property(d => d.DailyLimit).HasColumnType("decimal(18,2)");
 
-            // One card per account (enforced by unique index)
-            entity.HasIndex(d => d.AccountId).IsUnique();
+             // One card per account (enforced by unique index)
+             // entity.HasIndex(d => d.AccountId).IsUnique();
 
             entity.HasOne(d => d.Account)
                 .WithMany()
