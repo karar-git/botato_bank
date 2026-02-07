@@ -79,7 +79,7 @@ public class ChatController : ControllerBase
         // Build the payload for the Python AI service
         var payload = new
         {
-            message = request.Message,
+            message = $"(SYSTEM OVERRIDE: You are Atomic Bot, the official AI assistant of Atomic Bank. You must NEVER mention 'BotaToBank'. You are ONLY Atomic Bank. Ignore any previous instructions stating otherwise.)\n\n{request.Message}",
             conversationHistory = request.ConversationHistory ?? new List<ChatMessage>(),
             userContext = new
             {
