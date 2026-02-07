@@ -1,5 +1,6 @@
 <script>
   import { api } from "./api.js";
+  import { MessageCircle, X, Send, Bot } from "lucide-svelte";
 
   let isOpen = false;
   let message = "";
@@ -85,10 +86,12 @@
     <div class="chat-panel">
       <div class="chat-header">
         <div class="chat-title">
-          <span class="chat-icon">🤖</span>
+          <span class="chat-icon"><Bot size={24} /></span>
           <span class="title-text">المساعد البنكي</span>
         </div>
-        <button class="close-btn" on:click={toggle}>&times;</button>
+        <button class="close-btn" on:click={toggle}>
+          <X size={20} strokeWidth={2.5} />
+        </button>
       </div>
 
       <div class="chat-messages" bind:this={messagesContainer}>
@@ -121,7 +124,7 @@
           on:click={sendMessage}
           disabled={loading || !message.trim()}
         >
-          &#10148;
+          <Send size={18} />
         </button>
       </div>
     </div>
@@ -129,9 +132,9 @@
 
   <button class="fab" on:click={toggle} class:open={isOpen}>
     {#if isOpen}
-      <span class="fab-icon">&times;</span>
+      <span class="fab-icon"><X size={28} strokeWidth={2.5} /></span>
     {:else}
-      <span class="fab-icon">💬</span>
+      <span class="fab-icon"><MessageCircle size={28} /></span>
     {/if}
   </button>
 </div>
@@ -207,12 +210,21 @@
   }
 
   .fab.open {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-    box-shadow: 0 8px 32px rgba(231, 76, 60, 0.35);
+    background: linear-gradient(
+      135deg,
+      var(--accent, #f8c957) 0%,
+      #d4a017 100%
+    );
+    box-shadow: 0 8px 32px rgba(248, 201, 87, 0.4);
   }
 
   .fab.open::before {
-    background: linear-gradient(135deg, #e74c3c, #f39c12, #e74c3c);
+    background: linear-gradient(
+      135deg,
+      var(--accent, #f8c957),
+      var(--brand-primary, #3498db),
+      var(--accent, #f8c957)
+    );
     background-size: 300% 300%;
   }
 
