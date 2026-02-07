@@ -29,7 +29,7 @@ public class ChatController : ControllerBase
         // Read from config: Chat:ApiUrl > Ocr:ApiUrl (transformed) > fallback to production AI service
         _chatApiUrl = config["Chat:ApiUrl"]
             ?? config["Ocr:ApiUrl"]?.Replace("/validate-id", "/chat")
-            ?? "https://botatobank-production-47d4.up.railway.app/chat";
+            ?? "https://atomicbank-production.up.railway.app/chat";
         _logger = logger;
     }
 

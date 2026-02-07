@@ -166,14 +166,14 @@ using (var scope = app.Services.CreateScope())
         {
             Id = Guid.NewGuid(),
             FullName = "System Admin",
-            Email = "admin@botatobank.com",
+            Email = "admin@atomicbank.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
             Role = UserRole.Admin,
             KycStatus = KycStatus.Verified,
             CreatedAt = DateTime.UtcNow
         };
         db.Users.Add(admin);
-        Console.WriteLine("Seeded admin user: admin@botatobank.com / Admin@123");
+        Console.WriteLine("Seeded admin user: admin@atomicbank.com / Admin@123");
     }
 
     // Seed default employee user
@@ -183,14 +183,14 @@ using (var scope = app.Services.CreateScope())
         {
             Id = Guid.NewGuid(),
             FullName = "System Employee",
-            Email = "employee@botatobank.com",
+            Email = "employee@atomicbank.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Employee@123"),
             Role = UserRole.Employee,
             KycStatus = KycStatus.Verified,
             CreatedAt = DateTime.UtcNow
         };
         db.Users.Add(employee);
-        Console.WriteLine("Seeded employee user: employee@botatobank.com / Employee@123");
+        Console.WriteLine("Seeded employee user: employee@atomicbank.com / Employee@123");
     }
 
     db.SaveChanges();

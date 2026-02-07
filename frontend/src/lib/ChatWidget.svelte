@@ -87,11 +87,11 @@
     <div class="chat-panel">
       <div class="chat-header">
         <div class="chat-title">
-          <span class="chat-icon"><Bot size={28} strokeWidth={2} /></span>
+          <span class="chat-icon"><Bot size={32} strokeWidth={2.5} /></span>
           <span class="title-text">المساعد البنكي</span>
         </div>
         <button class="close-btn" on:click={toggle}>
-          <CircleX size={24} strokeWidth={2} />
+          <CircleX size={26} strokeWidth={2.5} />
         </button>
       </div>
 
@@ -298,34 +298,36 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    background: rgba(255, 255, 255, 0.15);
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .close-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    background: rgba(255, 255, 255, 0.1);
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.15);
     border: none;
     color: white;
     cursor: pointer;
     padding: 0;
     border-radius: 50%;
-    opacity: 0.85;
-    transition: all 0.2s ease;
+    opacity: 0.9;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
+    margin-left: 8px;
   }
 
   .close-btn:hover {
     opacity: 1;
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.25);
+    transform: rotate(90deg) scale(1.1);
   }
 
   /* Chat Messages Area */
