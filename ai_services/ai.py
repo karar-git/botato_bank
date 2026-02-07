@@ -93,7 +93,7 @@ class BankChatbot:
     """
 
     SYSTEM_PROMPT = (
-        "You are BotaToBank's AI banking assistant. You help customers with their banking questions. "
+        "You are Atomic Bank's AI banking assistant. You help customers with their banking questions. "
         "You have access to the customer's account information and transaction history provided below. "
         "Use this data to answer questions about their balance, recent transactions, spending patterns, etc. "
         "Be concise, helpful, and professional. If asked about something outside banking, politely redirect. "

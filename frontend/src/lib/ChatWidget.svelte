@@ -1,6 +1,6 @@
 <script>
   import { api } from "./api.js";
-  import { MessageCircle, X, Send, Bot } from "lucide-svelte";
+  import { Bot, CircleX, SendHorizontal } from "lucide-svelte";
 
   let isOpen = false;
   let message = "";
@@ -86,11 +86,11 @@
     <div class="chat-panel">
       <div class="chat-header">
         <div class="chat-title">
-          <span class="chat-icon"><Bot size={24} /></span>
+          <span class="chat-icon"><Bot size={22} strokeWidth={2} /></span>
           <span class="title-text">المساعد البنكي</span>
         </div>
         <button class="close-btn" on:click={toggle}>
-          <X size={20} strokeWidth={2.5} />
+          <CircleX size={22} strokeWidth={2} />
         </button>
       </div>
 
@@ -124,18 +124,20 @@
           on:click={sendMessage}
           disabled={loading || !message.trim()}
         >
-          <Send size={18} />
+          <SendHorizontal size={20} strokeWidth={2} />
         </button>
       </div>
     </div>
   {/if}
 
   <button class="fab" on:click={toggle} class:open={isOpen}>
-    {#if isOpen}
-      <span class="fab-icon"><X size={28} strokeWidth={2.5} /></span>
-    {:else}
-      <span class="fab-icon"><MessageCircle size={28} /></span>
-    {/if}
+    <span class="fab-icon">
+      {#if isOpen}
+        <CircleX size={30} strokeWidth={2} />
+      {:else}
+        <Bot size={30} strokeWidth={2} />
+      {/if}
+    </span>
   </button>
 </div>
 
@@ -149,7 +151,7 @@
     font-family: "Lexend", "Cairo", sans-serif;
   }
 
-  /* FAB Button - Atomic Bank Style */
+  /* FAB Button - Atomic Bank Style - Clean Modern Look */
   .fab {
     width: 64px;
     height: 64px;
@@ -161,51 +163,17 @@
       var(--brand-dark, #34495e) 100%
     );
     color: white;
-    font-size: 28px;
     cursor: pointer;
     box-shadow: 0 8px 32px rgba(52, 152, 219, 0.35);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .fab::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 2px;
-    background: linear-gradient(
-      135deg,
-      var(--brand-primary, #3498db),
-      var(--accent, #f8c957),
-      #27ae60,
-      var(--brand-primary, #3498db)
-    );
-    background-size: 300% 300%;
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    animation: borderRotate 4s linear infinite;
-    pointer-events: none;
-  }
-
-  @keyframes borderRotate {
-    0% {
-      background-position: 0% 50%;
-    }
-    100% {
-      background-position: 100% 50%;
-    }
+    padding: 0;
   }
 
   .fab:hover {
-    transform: scale(1.1) translateY(-2px);
+    transform: scale(1.08) translateY(-2px);
     box-shadow: 0 12px 40px rgba(52, 152, 219, 0.5);
   }
 
@@ -218,14 +186,17 @@
     box-shadow: 0 8px 32px rgba(248, 201, 87, 0.4);
   }
 
-  .fab.open::before {
-    background: linear-gradient(
-      135deg,
-      var(--accent, #f8c957),
-      var(--brand-primary, #3498db),
-      var(--accent, #f8c957)
-    );
-    background-size: 300% 300%;
+  .fab.open:hover {
+    box-shadow: 0 12px 40px rgba(248, 201, 87, 0.55);
+  }
+
+  .fab-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    line-height: 1;
   }
 
   .fab-icon {
