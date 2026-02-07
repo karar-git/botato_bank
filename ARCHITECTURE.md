@@ -338,3 +338,4 @@ Tests cover:
 - Negative/zero/sub-cent amount rejection
 - Unauthorized account access
 - Balance reconciliation (cached == ledger-derived)
+- wow
