@@ -208,7 +208,7 @@
         width: 100%;
         overflow-y: auto;
         overflow-x: hidden;
-        background: radial-gradient(circle at 50% 0%, #006c68 0%, #022c2b 100%);
+        background: var(--bg-secondary, #ECF0F1);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -217,7 +217,7 @@
 
     /* TYPOGRAPHY */
     h1, label, input, span {
-        color: #ffffff;
+        color: var(--text-main, #2c3e50);
     }
 
     .headline {
@@ -227,23 +227,24 @@
         margin-bottom: 1.5rem;
         text-align: center;
         margin-top: 0;
+        color: var(--brand-dark, #34495E);
     }
 
     .highlight {
-        background: linear-gradient(135deg, #fdff84 0%, #a3f7bf 50%, #29a19c 100%);
+        background: linear-gradient(135deg, var(--brand-primary, #3498DB) 0%, var(--accent, #F8C957) 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
-    /* GLASSMORPHISM */
+    /* GLASSMORPHISM - white style */
     .glass-panel {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
         border-radius: 20px;
         padding: 2.5rem;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         width: 100%;
         max-width: 420px;
         position: relative;
@@ -260,7 +261,7 @@
         display: block;
         margin-bottom: 0.5rem;
         font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-muted, #7f8c8d);
     }
 
     input[type="text"],
@@ -268,10 +269,10 @@
     input[type="password"] {
         width: 100%;
         padding: 0.8rem 1rem;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: white;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
-        color: #fff;
+        color: var(--text-main, #2c3e50);
         font-family: inherit;
         font-size: 0.95rem;
         transition: all 0.3s ease;
@@ -280,9 +281,13 @@
 
     input:focus {
         outline: none;
-        background: rgba(255, 255, 255, 0.1);
-        border-color: #29a19c;
-        box-shadow: 0 0 0 2px rgba(41, 161, 156, 0.2);
+        background: white;
+        border-color: var(--brand-primary, #3498DB);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+    }
+
+    input::placeholder {
+        color: #b0bec5;
     }
 
     /* UPLOAD SECTION */
@@ -293,7 +298,7 @@
 
     .section-label {
         font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--text-muted, #7f8c8d);
         margin-bottom: 0.8rem;
         display: block;
     }
@@ -306,8 +311,8 @@
 
     .upload-box {
         position: relative;
-        background: rgba(255, 255, 255, 0.02);
-        border: 2px dashed rgba(255, 255, 255, 0.2);
+        background: white;
+        border: 2px dashed #d1d5db;
         border-radius: 10px;
         padding: 0.5rem;
         text-align: center;
@@ -321,13 +326,13 @@
     }
 
     .upload-box:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: #29a19c;
+        background: #f0f7ff;
+        border-color: var(--brand-primary, #3498DB);
     }
 
     .upload-box.has-file {
-        border-color: #a3f7bf;
-        background: rgba(163, 247, 191, 0.05);
+        border-color: #27ae60;
+        background: rgba(39, 174, 96, 0.05);
     }
 
     .upload-icon {
@@ -337,7 +342,7 @@
 
     .upload-text {
         font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-muted, #7f8c8d);
         max-width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -356,15 +361,15 @@
 
     .upload-hint {
         font-size: 0.7rem;
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--text-muted, #7f8c8d);
         margin-top: 0.5rem;
     }
 
     /* ERROR */
     .error-msg {
-        background: rgba(229, 62, 62, 0.15);
-        border: 1px solid rgba(229, 62, 62, 0.3);
-        color: #feb2b2;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
         padding: 0.7rem 1rem;
         border-radius: 10px;
         font-size: 0.85rem;
@@ -376,7 +381,7 @@
     .cta-button {
         position: relative;
         padding: 0.9rem 2rem;
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--brand-dark, #34495E);
         border: none;
         border-radius: 50px;
         color: #fff;
@@ -391,8 +396,9 @@
     }
 
     .cta-button:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--brand-primary, #3498DB);
         transform: scale(1.02);
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
     }
 
     .cta-button:disabled {
@@ -402,12 +408,11 @@
     }
 
     .cta-button.primary {
-        background: linear-gradient(135deg, rgba(0, 108, 104, 0.8), rgba(41, 161, 156, 0.6));
+        background: var(--brand-dark, #34495E);
     }
 
     /* ANIMATED BORDER GRADIENT */
-    .glass-panel::before,
-    .cta-button::before {
+    .glass-panel::before {
         content: "";
         position: absolute;
         top: 0;
@@ -415,8 +420,8 @@
         right: 0;
         bottom: 0;
         border-radius: inherit;
-        padding: 1px;
-        background: linear-gradient(90deg, #006c68, #29a19c, #a3f7bf, #fdff84, #006c68);
+        padding: 1.5px;
+        background: linear-gradient(90deg, var(--brand-primary, #3498DB), var(--accent, #F8C957), #27ae60, var(--brand-primary, #3498DB));
         background-size: 300% 300%;
         -webkit-mask:
             linear-gradient(#fff 0 0) content-box,
@@ -427,11 +432,16 @@
         pointer-events: none;
     }
 
+    @keyframes borderRotate {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 100% 50%; }
+    }
+
     /* LINKS */
     .switch-link {
         background: none;
         border: none;
-        color: #fdff84;
+        color: var(--brand-primary, #3498DB);
         text-decoration: underline;
         cursor: pointer;
         font-family: inherit;
@@ -449,7 +459,7 @@
     }
 
     .switch-text {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-muted, #7f8c8d);
         text-decoration: none;
         display: inline-block;
         margin-right: 4px;
@@ -459,7 +469,7 @@
     .back-link {
         background: none;
         border: none;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted, #7f8c8d);
         cursor: pointer;
         font-family: inherit;
         font-size: 0.9rem;
@@ -468,15 +478,15 @@
     }
 
     .back-link:hover {
-        color: #fff;
+        color: var(--brand-primary, #3498DB);
     }
 
-    /* FLOATING ATOMS */
+    /* FLOATING ATOMS - subtle light blue/gold blobs */
     .atom {
         position: absolute;
         border-radius: 50%;
-        filter: blur(80px);
-        opacity: 0.4;
+        filter: blur(100px);
+        opacity: 0.25;
         z-index: 0;
         pointer-events: none;
         animation: floatAtom 15s infinite ease-in-out alternate;
@@ -485,7 +495,7 @@
     .atom-1 {
         width: 400px;
         height: 400px;
-        background: #006c68;
+        background: var(--brand-primary, #3498DB);
         top: -10%;
         left: -10%;
         animation-delay: 0s;
@@ -493,7 +503,7 @@
     .atom-2 {
         width: 500px;
         height: 500px;
-        background: #29a19c;
+        background: #85c1e9;
         bottom: 10%;
         right: -10%;
         animation-delay: -5s;
@@ -501,29 +511,34 @@
     .atom-3 {
         width: 300px;
         height: 300px;
-        background: #a3f7bf;
+        background: var(--accent, #F8C957);
         top: 40%;
         left: 30%;
-        opacity: 0.3;
+        opacity: 0.15;
         animation-delay: -10s;
     }
     .atom-4 {
         width: 200px;
         height: 200px;
-        background: #a3f7bf;
+        background: #aed6f1;
         top: 15%;
         right: 15%;
-        opacity: 0.25;
+        opacity: 0.2;
         animation-delay: -2s;
     }
     .atom-5 {
         width: 350px;
         height: 350px;
-        background: #fdff84;
+        background: var(--accent, #F8C957);
         bottom: 5%;
         left: 10%;
-        opacity: 0.2;
+        opacity: 0.12;
         animation-delay: -7s;
+    }
+
+    @keyframes floatAtom {
+        0% { transform: translate(0, 0) scale(1); }
+        100% { transform: translate(30px, -30px) scale(1.1); }
     }
 
     .auth-section {

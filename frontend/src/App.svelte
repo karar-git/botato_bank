@@ -173,18 +173,19 @@
   /* ==================== APP SHELL ==================== */
   .app-shell {
     min-height: 100vh;
-    background: radial-gradient(circle at 50% 0%, #006c68 0%, #022c2b 100%);
+    background: var(--bg-secondary, #ECF0F1);
   }
 
   .app-header {
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid #e2e8f0;
     padding: 0.8rem 2rem;
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
   }
 
   .header-inner {
@@ -198,13 +199,13 @@
   .logo {
     font-size: 1.4rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--brand-dark, #34495E);
     margin: 0;
     letter-spacing: -0.5px;
   }
 
   .logo-highlight {
-    background: linear-gradient(135deg, #fdff84 0%, #a3f7bf 50%, #29a19c 100%);
+    background: linear-gradient(135deg, var(--brand-primary, #3498DB) 0%, var(--accent, #F8C957) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -216,27 +217,27 @@
   }
 
   .user-name {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-main, #2c3e50);
     font-size: 0.9rem;
     font-weight: 500;
   }
 
   .role-tag {
-    background: rgba(41, 161, 156, 0.3);
-    color: #a3f7bf;
+    background: rgba(52, 152, 219, 0.12);
+    color: var(--brand-primary, #3498DB);
     padding: 0.15rem 0.7rem;
     border-radius: 20px;
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border: 1px solid rgba(163, 247, 191, 0.2);
+    border: 1px solid rgba(52, 152, 219, 0.2);
   }
 
   .role-switcher {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: white;
+    color: var(--text-main, #2c3e50);
+    border: 1px solid #e2e8f0;
     padding: 0.3rem 0.6rem;
     border-radius: 10px;
     font-size: 0.8rem;
@@ -245,18 +246,18 @@
     outline: none;
     transition: all 0.2s ease;
   }
-  .role-switcher:hover { border-color: rgba(255, 255, 255, 0.4); }
-  .role-switcher:focus { border-color: #29a19c; box-shadow: 0 0 0 2px rgba(41, 161, 156, 0.2); }
+  .role-switcher:hover { border-color: #cbd5e0; }
+  .role-switcher:focus { border-color: var(--brand-primary, #3498DB); box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15); }
   .role-switcher:disabled { opacity: 0.5; cursor: wait; }
   .role-switcher option {
-    background: #022c2b;
-    color: #fff;
+    background: white;
+    color: var(--text-main, #2c3e50);
   }
 
   .btn-logout {
     background: transparent;
-    border: 1px solid rgba(229, 62, 62, 0.5);
-    color: #fc8181;
+    border: 1px solid rgba(229, 62, 62, 0.4);
+    color: #e53e3e;
     padding: 0.3rem 1rem;
     border-radius: 20px;
     cursor: pointer;
@@ -265,9 +266,9 @@
     transition: all 0.2s ease;
   }
   .btn-logout:hover {
-    background: rgba(229, 62, 62, 0.15);
+    background: rgba(229, 62, 62, 0.08);
     border-color: #e53e3e;
-    color: #fff;
+    color: #c53030;
   }
 
   .app-content {
@@ -279,7 +280,7 @@
   /* ==================== LOADING SCREEN ==================== */
   .loading-screen {
     min-height: 100vh;
-    background: radial-gradient(circle at 50% 0%, #006c68 0%, #022c2b 100%);
+    background: var(--bg-secondary, #ECF0F1);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -291,14 +292,14 @@
   .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: #29a19c;
+    border: 3px solid #e2e8f0;
+    border-top-color: var(--brand-primary, #3498DB);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
 
   .loading-text {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted, #7f8c8d);
     font-size: 0.9rem;
     margin-top: 1rem;
   }
@@ -310,7 +311,7 @@
   /* ==================== KYC SCREENS ==================== */
   .kyc-screen {
     min-height: 100vh;
-    background: radial-gradient(circle at 50% 0%, #006c68 0%, #022c2b 100%);
+    background: var(--bg-secondary, #ECF0F1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -320,10 +321,10 @@
   }
 
   .kyc-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
     border-radius: 20px;
     padding: 3rem 2.5rem;
     max-width: 500px;
@@ -331,7 +332,7 @@
     text-align: center;
     position: relative;
     z-index: 1;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   }
 
   .kyc-icon {
@@ -340,7 +341,7 @@
   }
 
   .kyc-card h2 {
-    color: #fff;
+    color: var(--brand-dark, #34495E);
     font-size: 1.4rem;
     font-weight: 700;
     margin-bottom: 1rem;
@@ -348,7 +349,7 @@
   }
 
   .kyc-card p {
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--text-muted, #7f8c8d);
     font-size: 0.95rem;
     line-height: 1.6;
     margin-bottom: 0.5rem;
@@ -356,14 +357,14 @@
 
   .kyc-hint {
     font-size: 0.85rem !important;
-    color: rgba(255, 255, 255, 0.4) !important;
+    color: #b0bec5 !important;
     margin-top: 0.5rem;
   }
 
   .rejection-notice {
-    background: rgba(229, 62, 62, 0.12);
-    border: 1px solid rgba(229, 62, 62, 0.25);
-    color: #feb2b2;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
     padding: 1rem 1.2rem;
     border-radius: 12px;
     margin-top: 1.5rem;
@@ -373,16 +374,16 @@
   .rejection-notice strong {
     display: block;
     margin-bottom: 0.3rem;
-    color: #fc8181;
+    color: #dc2626;
   }
   .rejection-notice p {
-    color: #feb2b2 !important;
+    color: #991b1b !important;
     margin-bottom: 0 !important;
   }
 
   .btn-check {
     margin-top: 1.5rem;
-    background: linear-gradient(135deg, rgba(0, 108, 104, 0.8), rgba(41, 161, 156, 0.6));
+    background: var(--brand-dark, #34495E);
     color: white;
     border: none;
     padding: 0.7rem 2rem;
@@ -395,14 +396,15 @@
   }
   .btn-check:hover {
     transform: scale(1.03);
-    box-shadow: 0 4px 20px rgba(41, 161, 156, 0.3);
+    background: var(--brand-primary, #3498DB);
+    box-shadow: 0 4px 20px rgba(52, 152, 219, 0.3);
   }
 
   .btn-signout {
     margin-top: 1rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid #e2e8f0;
+    color: var(--text-muted, #7f8c8d);
     padding: 0.5rem 1.5rem;
     border-radius: 50px;
     font-size: 0.85rem;
@@ -414,51 +416,51 @@
     transition: all 0.2s ease;
   }
   .btn-signout:hover {
-    border-color: rgba(255, 255, 255, 0.5);
-    color: #fff;
+    border-color: #cbd5e0;
+    color: var(--text-main, #2c3e50);
   }
 
   /* ==================== FLOATING ATOMS ==================== */
   .atom {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.4;
+    filter: blur(100px);
+    opacity: 0.2;
     z-index: 0;
     pointer-events: none;
     animation: floatAtom 15s infinite ease-in-out alternate;
   }
   .atom-1 {
     width: 400px; height: 400px;
-    background: #006c68;
+    background: var(--brand-primary, #3498DB);
     top: -10%; left: -10%;
     animation-delay: 0s;
   }
   .atom-2 {
     width: 500px; height: 500px;
-    background: #29a19c;
+    background: #85c1e9;
     bottom: 10%; right: -10%;
     animation-delay: -5s;
   }
   .atom-3 {
     width: 300px; height: 300px;
-    background: #a3f7bf;
+    background: var(--accent, #F8C957);
     top: 40%; left: 30%;
-    opacity: 0.3;
+    opacity: 0.12;
     animation-delay: -10s;
   }
   .atom-4 {
     width: 200px; height: 200px;
-    background: #a3f7bf;
+    background: #aed6f1;
     top: 15%; right: 15%;
-    opacity: 0.25;
+    opacity: 0.15;
     animation-delay: -2s;
   }
   .atom-5 {
     width: 350px; height: 350px;
-    background: #fdff84;
+    background: var(--accent, #F8C957);
     bottom: 5%; left: 10%;
-    opacity: 0.2;
+    opacity: 0.1;
     animation-delay: -7s;
   }
 
